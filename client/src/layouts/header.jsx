@@ -45,10 +45,10 @@ const Header = () => {
                                         <a href="/" className="block py-2 px-3 rounded md:p-0 md:hover:text-golden-yellow text-white hover:bg-gray-700 hover:text-white md:hover:bg-transparent border-gray-700" aria-current="page">Home</a>
                                     </li>
                                     <li>
-                                        <a href="#about_section" className="block py-2 px-3 rounded md:p-0 md:hover:text-golden-yellow text-white hover:bg-gray-700 hover:text-white md:hover:bg-transparent border-gray-700" aria-current="page">About</a>
+                                        <a href="/#about_section" className="block py-2 px-3 rounded md:p-0 md:hover:text-golden-yellow text-white hover:bg-gray-700 hover:text-white md:hover:bg-transparent border-gray-700" aria-current="page">About</a>
                                     </li>
                                     <li>
-                                        <a href="#contact_section" className="block py-2 px-3 rounded md:p-0 md:hover:text-golden-yellow text-white hover:bg-gray-700 hover:text-white md:hover:bg-transparent border-gray-700" aria-current="page">Contact</a>
+                                        <a href="/#contact_section" className="block py-2 px-3 rounded md:p-0 md:hover:text-golden-yellow text-white hover:bg-gray-700 hover:text-white md:hover:bg-transparent border-gray-700" aria-current="page">Contact</a>
                                     </li>
                                     </ul>
                                 </div>
@@ -70,8 +70,8 @@ const Header = () => {
                                     <div className="-my-6 divide-y divide-gray-500/10">
                                         <div className="space-y-2 py-6">
                                             <a href="/" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 bg-dark-blue rounded md:bg-transparent md:p-0 text-white md:text-blue-500" aria-current="page">Home</a>
-                                            <a href="#about_section" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 bg-dark-blue rounded md:bg-transparent md:p-0 text-white md:text-blue-500" aria-current="page">About</a>
-                                            <a href="#contact_section" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 bg-dark-blue rounded md:bg-transparent md:p-0 text-white md:text-blue-500" aria-current="page">Contact</a>
+                                            <a href="/#about_section" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 bg-dark-blue rounded md:bg-transparent md:p-0 text-white md:text-blue-500" aria-current="page">About</a>
+                                            <a href="/#contact_section" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 bg-dark-blue rounded md:bg-transparent md:p-0 text-white md:text-blue-500" aria-current="page">Contact</a>
                                             {/* <a href="/register" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 bg-blue-700 rounded md:bg-transparent md:p-0 text-white md:text-blue-500" aria-current="page">Contact</a> */}
                                         </div>
                                     </div>

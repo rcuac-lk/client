@@ -10,6 +10,9 @@ import ContactSection from './layouts/contactSection.jsx';
 import { Routes, Route, BrowserRouter as Router } from 'react-router-dom';
 import LoginPage from './pages/loginPage.jsx';
 import RegistrationPage from './pages/registrationPage.jsx';
+import SwimmingPage from './pages/swimmingPage.jsx';
+import DivingPage from './pages/divingPage.jsx';
+import WaterPoloPage from './pages/waterPoloPage.jsx';
 
 function App() {
   return (
@@ -18,6 +21,9 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegistrationPage />} />
+          <Route path="/swimming" element={<SwimmingPage />} />
+          <Route path="/diving" element={<DivingPage />} />
+          <Route path="/water-polo" element={<WaterPoloPage />} />
         </Routes>
         <Routes>
           <Route path="/" element={

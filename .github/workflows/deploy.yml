@@ -1,0 +1,35 @@
+name: Deploy App
+
+on:
+  push:
+    branches:
+      - dev  # Change to your default branch if different
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'  # Use the version of Node.js that your project requires
+
+      - name: Install dependencies
+        run: |
+          cd client
+          npm install
+
+      - name: Build the project
+        run: |
+          cd client
+          npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./client/build

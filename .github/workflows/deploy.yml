@@ -36,6 +36,8 @@ jobs:
     - name: Remove existing build folder if it exists
       run: |
         if [ -d "build" ]; then
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git rm -r build
           git commit -m 'Remove existing build folder'
           git push

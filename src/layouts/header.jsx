@@ -29,7 +29,7 @@ const Header = () => {
                             </a>
                             <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
                                 <div className="flex">
-                                    <Link to="/register" className="text-white focus:ring-4 hidden md:block focus:outline-none font-medium rounded-lg text-sm md:ml-4 px-4 py-2 text-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800">Register</Link>
+                                    <Link to="/register" className="text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm md:mx-4 px-4 py-2 text-center bg-golden-yellow hover:bg-white hover:text-dark-blue hover:border-golden-yellow focus:ring-golden-yellow">Register</Link>
                                     <Link to="/login" className="text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm md:mx-4 px-4 py-2 text-center bg-golden-yellow hover:bg-white hover:text-dark-blue hover:border-golden-yellow focus:ring-golden-yellow">Login</Link>
                                 </div>
                                 <div className="flex md:hidden">

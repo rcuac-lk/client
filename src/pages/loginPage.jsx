@@ -13,7 +13,7 @@ const LoginPage = () => {
         try{
             await axios.post('/login', { email, password });
             const response = await axios.post('/login', { email, password });
-            if (response.status === 200) {
+            if (response.status === 204) {
                 setEmail('');
                 setPassword('');
                 navigate('/dashboard');

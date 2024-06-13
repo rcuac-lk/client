@@ -30,9 +30,6 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Build the project
-      run: npm run build
-
     - name: Remove existing build folder if it exists
       run: |
         if [ -d "build" ]; then
@@ -44,6 +41,9 @@ jobs:
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build the project
+      run: npm run build
 
     - name: Commit new build folder
       run: |

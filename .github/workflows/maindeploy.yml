@@ -3,7 +3,7 @@ name: Build and Commit
 on:
   push:
     branches:
-      - dev
+      - main
 
 permissions:
   contents: write
@@ -30,27 +30,15 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Remove existing build folder if it exists
-      run: |
-        if [ -d "build" ]; then
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git rm -r build
-          git commit -m 'Remove existing build folder'
-          git push
-        fi
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
     - name: Build the project
       run: npm run build
 
-    - name: Commit new build folder
+    - name: Commit build folder
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git add build
-        git commit -m 'Add new build folder'
+        git commit -m 'Add build folder'
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

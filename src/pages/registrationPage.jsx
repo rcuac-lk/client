@@ -1,27 +1,53 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from '../api/axios';
+// import axios from '../api/axios';
+import axios from 'axios';
 
 const RegistrationPage = () => {
     const navigate = useNavigate();
-    const [name, setName] = useState('');
+    const [username, setUsername] = useState('');
+    const [role, setRole] = useState(''); 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [password_confirmation, setPasswordConfirmation] = useState('');
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        try{
-            await axios.post('/register', { name, email, password, password_confirmation });
-            setName('');
-            setEmail('');
-            setPassword('');
-            setPasswordConfirmation('');
-            navigate('/dashboard')
+        try {
+            let response = await axios.post('http://localhost:8080/api/auth/signup', {
+                username,
+                role,
+                email,
+                password,
+                password_confirmation
+            });
+            console.log(response);
+            if (response.status === 200) {
+                console.log(response.data);
+                setUsername('');
+                setEmail('');
+                setPassword('');
+                setPasswordConfirmation('');
+                setRole('');
+                navigate('/login');
+            } else {
+                console.log('Registration failed', response.data);
+            }
         } catch (error) {
-            console.log(error);
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                console.log('Error response:', error.response.data);
+            } else if (error.request) {
+                // The request was made but no response was received
+                console.log('Error request:', error.request);
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                console.log('Error message:', error.message);
+            }
         }
     };
+    
 
     return (
         <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center">
@@ -29,7 +55,7 @@ const RegistrationPage = () => {
             <form onSubmit={handleSubmit} class="max-w-sm w-full bg-gray-800 p-8 rounded-lg">
                 <div class="mb-5">
                     <label for="email" class="block mb-2 text-sm font-medium text-white">Name</label>
-                    <input type="name" id="name" value={name} onChange={(e) => setName(e.target.value)} class="border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="name@example.com" required />
+                    <input type="name" id="name" value={username} onChange={(e) => setUsername(e.target.value)} class="border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="name@example.com" required />
                 </div>
                 <div class="mb-5">
                     <label for="email" class="block mb-2 text-sm font-medium text-white">Email</label>
@@ -42,6 +68,15 @@ const RegistrationPage = () => {
                 <div class="mb-5">
                     <label for="password"  class="block mb-2 text-sm font-medium text-white">Confim Password</label>
                     <input type="password" id="confirm_password" value={password_confirmation} onChange={(e) => setPasswordConfirmation(e.target.value)} class="border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" required />
+                </div>
+                <div class="mb-5">
+                    <label for="dropdown" class="block mb-2 text-sm font-medium text-white">Select an Option</label>
+                    <select id="dropdown" value={role} onChange={(e) => setRole(e.target.value)} class="border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" required>
+                        <option value="Coach">Coach</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Parent">Parent</option>
+                        <option value="Student">Student</option>
+                    </select>
                 </div>
                 <button type="submit" class="text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800">Register</button>
             </form>

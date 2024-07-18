@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import AuthService from "../services/auth.service";
 
-const Dashboard = () => {
+const ParentDashboard = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isUserMenuOpen, setUserMenuOpen] = useState(false);
   const [userDetails, setUserDetails] = useState({});
@@ -142,13 +141,13 @@ const Dashboard = () => {
                       className="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
                       role="none"
                     >
-                      {userDetails.roles}
+                      {userDetails.role}
                     </p>
                     <p
                       className="text-sm text-gray-900 dark:text-white"
                       role="none"
                     >
-                      {userDetails.username}
+                      {userDetails.name}
                     </p>
                     <p
                       className="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
@@ -268,4 +267,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default ParentDashboard;

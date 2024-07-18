@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import AuthService from "../services/auth.service";
 
-const Dashboard = () => {
+const ManagerDashboard = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isUserMenuOpen, setUserMenuOpen] = useState(false);
   const [userDetails, setUserDetails] = useState({});
@@ -259,7 +258,7 @@ const Dashboard = () => {
           </h1>
           <div className="mt-4">
             <p className="text-gray-900">
-              Welcome to RCUAC Admin Dashboard
+              Welcome to RCUAC Manager Dashboard
             </p>
           </div>
         </div>
@@ -268,4 +267,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default ManagerDashboard;

@@ -1,25 +1,46 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from '../api/axios';
+import AuthService from '../services/auth.service';
 
 const LoginPage = () => {
     const navigate = useNavigate();
-    const [email, setEmail] = useState('');
+    // const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         try{
-            await axios.post('/login', { email, password });
-            const response = await axios.post('/login', { email, password });
-            if (response.status === 204) {
-                setEmail('');
-                setPassword('');
-                navigate('/dashboard');
-            } else {
-                console.log('Login failed', response.data);
-            }
+            // await axios.post('http://localhost:8080/api/auth/signin', { username, password });
+            // const response = await axios.post('http://localhost:8080/api/auth/signin', { username, password });
+            // console.log(response.data);
+            // if (response.status === 200) {
+            //     // setEmail('');
+            //     setUsername('');
+            //     setPassword('');
+
+            //     if(response.data.roles === 'Parent') navigate('/parent');
+            //     if(response.data.roles === 'Child') navigate('/child');
+            //     if(response.data.roles === 'Coach') navigate('/coach');
+            //     if(response.data.roles === 'Manager') navigate('/manager');
+            //     if(response.data.roles === 'Admin') navigate('/dashboard');
+            // } else {
+            //     console.log('Login failed', response.data);
+            // }
+            AuthService.login(username, password).then(
+                () => {
+                    let response = AuthService.getCurrentUser();
+                    if(response.roles === 'Parent') navigate('/parent');
+                    if(response.roles === 'Child') navigate('/child');
+                    if(response.roles === 'Coach') navigate('/coach');
+                    if(response.roles === 'Manager') navigate('/manager');
+                    if(response.roles === 'Admin') navigate('/dashboard');
+                },
+                (error) => {
+                    console.log(error);
+                }
+            );
         } catch (error) {
             console.log(error);
         }
@@ -29,9 +50,13 @@ const LoginPage = () => {
         <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center">
             <h1 className="text-3xl font-bold text-white text-center mb-5">Login</h1>
             <form onSubmit={handleSubmit} class="max-w-sm w-full bg-gray-800 p-8 rounded-lg">
-                <div class="mb-5">
+                {/* <div class="mb-5">
                     <label for="email" class="block mb-2 text-sm font-medium text-white">Your email</label>
                     <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} id="email" class="border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="name@example.com" required />
+                </div> */}
+                <div class="mb-5">
+                    <label for="text" class="block mb-2 text-sm font-medium text-white">Your username</label>
+                    <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} id="username" class="border text-sm rounded-lg block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" required />
                 </div>
                 <div class="mb-5">
                     <label for="password"  class="block mb-2 text-sm font-medium text-white">Your password</label>

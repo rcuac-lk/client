@@ -4,7 +4,6 @@ import HeroSection from './layouts/heroSection.jsx';
 import Footer from './layouts/footer.jsx';
 import SwimmingDetailsSection from './layouts/swimmingDetailsSection.jsx';
 import AboutSection from './layouts/aboutSection.jsx';
-import InstructorSection from './layouts/instructorSection.jsx';
 import BannerSection from './layouts/bannerSection.jsx';
 import ContactSection from './layouts/contactSection.jsx';
 import { Routes, Route, BrowserRouter as Router } from 'react-router-dom';

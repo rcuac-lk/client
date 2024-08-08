@@ -1,10 +1,11 @@
-import axios from "axios";
-
-// const API_URL = "http://localhost:8080/api/auth/";
-const API_URL = "http://server.rcuac.lk//api/auth/";
+// import axios from "axios";
+import api from "./api";
+import TokenService from "./token.service";
+const API_URL = "http://localhost:8080/api/";
+// const API_URL = "http://server.rcuac.lk//api/auth/";
 
 const register = (username, email, password) => {
-  return axios.post(API_URL + "signup", {
+  return api.post(API_URL + "auth/signup", {
     username,
     email,
     password,
@@ -12,8 +13,8 @@ const register = (username, email, password) => {
 };
 
 const login = (username, password) => {
-  return axios
-    .post(API_URL + "signin", {
+  return api
+    .post(API_URL + "auth/signin", {
       username,
       password,
     })
@@ -26,11 +27,11 @@ const login = (username, password) => {
 };
 
 const logout = () => {
-  localStorage.removeItem("user");
+  TokenService.removeUser();
 };
 
 const getCurrentUser = () => {
-  return JSON.parse(localStorage.getItem("user"));
+  return TokenService.getUser();
 };
 
 const AuthService = {

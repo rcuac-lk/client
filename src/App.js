@@ -17,6 +17,7 @@ import ChildDashboard from './pages/childDashboard.jsx';
 import CoachDashboard from './pages/coachDashboard.jsx';
 import ManagerDashboard from './pages/managerDashboard.jsx';
 import ParentDashboard from './pages/parentDashboard.jsx';
+import PendingPage from './pages/pendingPage.jsx';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
           <Route path="/coach" element={<CoachDashboard />} />
           <Route path="/manager" element={<ManagerDashboard />} />
           <Route path="/parent" element={<ParentDashboard />} />
+          <Route path="/pending" element={<PendingPage />} />
         </Routes>
         <Routes>
           <Route path="/" element={

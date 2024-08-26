@@ -75,7 +75,7 @@ const RegistrationPage = () => {
                         <option value="Coach">Coach</option>
                         <option value="Manager">Manager</option>
                         <option value="Parent">Parent</option>
-                        <option value="Student">Student</option>
+                        {/* <option value="Student">Student</option> */}
                     </select>
                 </div>
                 <button type="submit" class="text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800">Register</button>

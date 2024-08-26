@@ -12,30 +12,18 @@ const LoginPage = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try{
-            // await axios.post('http://localhost:8080/api/auth/signin', { username, password });
-            // const response = await axios.post('http://localhost:8080/api/auth/signin', { username, password });
-            // console.log(response.data);
-            // if (response.status === 200) {
-            //     // setEmail('');
-            //     setUsername('');
-            //     setPassword('');
-
-            //     if(response.data.roles === 'Parent') navigate('/parent');
-            //     if(response.data.roles === 'Child') navigate('/child');
-            //     if(response.data.roles === 'Coach') navigate('/coach');
-            //     if(response.data.roles === 'Manager') navigate('/manager');
-            //     if(response.data.roles === 'Admin') navigate('/dashboard');
-            // } else {
-            //     console.log('Login failed', response.data);
-            // }
             AuthService.login(username, password).then(
                 () => {
                     let response = AuthService.getCurrentUser();
-                    if(response.roles === 'Parent') navigate('/parent');
-                    if(response.roles === 'Child') navigate('/child');
-                    if(response.roles === 'Coach') navigate('/coach');
-                    if(response.roles === 'Manager') navigate('/manager');
-                    if(response.roles === 'Admin') navigate('/dashboard');
+                    if(response.approved === true) {
+                        if(response.roles === 'Parent') navigate('/parent');
+                        if(response.roles === 'Child') navigate('/child');
+                        if(response.roles === 'Coach') navigate('/coach');
+                        if(response.roles === 'Manager') navigate('/manager');
+                        if(response.roles === 'Admin') navigate('/dashboard');
+                    } else {
+                        navigate('/pending');
+                    }
                 },
                 (error) => {
                     console.log(error);

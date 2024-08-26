@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import AuthService from "../services/auth.service";
+import UserService from "../services/user.service";
+import UserListComponent from "../components/userList";
+import PendingApprovalsComponent from "../components/pendingApprovals";
 
 const Dashboard = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -9,9 +12,14 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isUnauthorized, setIsUnauthorized] = useState(false);
   const navigate = useNavigate();
+  const [selectedSection, setSelectedSection] = useState('dashboard');
 
   const toggleSidebar = () => {
     setSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleMenuClick = (section) => {
+    setSelectedSection(section);
   };
 
   const toggleUserMenu = () => {
@@ -49,9 +57,19 @@ const Dashboard = () => {
     }
   };
 
+  const notApprovedUsers = async () => {
+    try {
+      const response = await UserService.notApprovedUsers();
+      console.log('Not Approved Users:', response.data[0]);
+    } catch (error) {
+      console.error("Error fetching not approved users:", error);
+    }
+  };
+
   useEffect(() => {
 
     fetchUserDetails();
+    notApprovedUsers();
 
     const handleOutsideClick = (event) => {
       if (
@@ -204,6 +222,7 @@ const Dashboard = () => {
             <li>
               <a
                 href="#"
+                onClick={() => handleMenuClick('dashboard')}
                 className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
               >
                 <svg
@@ -222,6 +241,7 @@ const Dashboard = () => {
             <li>
               <a
                 href="#"
+                onClick={() => handleMenuClick('userList')}
                 className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
               >
                 <svg
@@ -240,6 +260,7 @@ const Dashboard = () => {
             <li>
               <a
                 href="#"
+                onClick={() => handleMenuClick('pendingApprovals')}
                 className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
               >
                 <svg
@@ -288,15 +309,23 @@ const Dashboard = () => {
       </aside>
 
       <div className="p-4 sm:ml-64">
-        <div className="overflow-hidden min-h-screen max-w-6xl mx-auto flex flex-col items-center justify-center m-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">
-            Dashboard
-          </h1>
-          <div className="mt-4">
-            <p className="text-gray-900">
-              Welcome to RCUAC Admin Dashboard
-            </p>
-          </div>
+        <div className="overflow-hidden min-h-screen flex flex-col">
+          {selectedSection === 'dashboard' && (
+            <>
+              <div className="flex flex-col items-center mx-auto justify-center m-auto">
+              <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+              <div className="mt-4">
+                <p className="text-gray-900">Welcome to RCUAC Admin Dashboard</p>
+              </div>
+              </div>
+            </>
+          )}
+          {selectedSection === 'userList' && (
+            <UserListComponent /> // Replace with actual User List component or content
+          )}
+          {selectedSection === 'pendingApprovals' && (
+            <PendingApprovalsComponent /> // Replace with actual Pending Approvals component or content
+          )}
         </div>
       </div>
     </>

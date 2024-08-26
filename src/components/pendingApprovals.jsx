@@ -5,33 +5,47 @@ const PendingApprovalsComponent = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [users, setUsers] = useState([]);
+    const [selectedUser, setSelectedUser] = useState(null); // To store the selected user's data
 
-    const openEditModal = () => {
-        setIsEditModalOpen(true);
+    const openEditModal = async (id) => {
+        try {
+            const response = await UserService.getUser(id);
+            setSelectedUser(response.data);
+            setIsEditModalOpen(true);
+        } catch (error) {
+            console.error("Error fetching user details:", error);
+        }
     };
 
     const closeEditModal = () => {
         setIsEditModalOpen(false);
+        setSelectedUser(null);
     };
 
-    const openConfirmModal = () => {
+    const openConfirmModal = (user) => {
+        setSelectedUser(user);
         setIsConfirmModalOpen(true);
     };
 
     const closeConfirmModal = () => {
         setIsConfirmModalOpen(false);
+        setSelectedUser(null);
     };
 
-    const handleApprove = () => {
-        openConfirmModal();
+    const handleApprove = async () => {
+        try {
+            await UserService.approveUser(selectedUser.UserID);
+            closeConfirmModal();
+            notApprovedUsers();
+        } catch (error) {
+            console.error("Error approving user:", error);
+        }
     };
 
     const notApprovedUsers = async () => {
         try {
             const response = await UserService.notApprovedUsers();
-            const usersData = response.data;
-            console.log('Not Approved Users:', usersData);
-            setUsers(usersData);
+            setUsers(response.data);
         } catch (error) {
             console.error("Error fetching not approved users:", error);
         }
@@ -44,19 +58,8 @@ const PendingApprovalsComponent = () => {
     return (
         <div>
             <div className="relative overflow-x-auto shadow-md sm:rounded-lg mt-16">
-                <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 md:space-y-0 py-4 bg-white dark:bg-gray-900">
-                    <label htmlFor="table-search" className="sr-only">Search</label>
-                    <div className="relative">
-                        <div className="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
-                            <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-                            </svg>
-                        </div>
-                        <input type="text" id="table-search-users" className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search for users" />
-                    </div>
-                </div>
                 <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                         <tr>
                             <th scope="col" className="px-6 py-3">Name</th>
                             <th scope="col" className="px-6 py-3">Role</th>
@@ -66,7 +69,7 @@ const PendingApprovalsComponent = () => {
                     </thead>
                     <tbody>
                         {users.map(user => (
-                            <tr key={user.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            <tr key={user.UserID} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                 <th scope="row" className="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
                                     <div className="ps-3">
                                         <div className="text-base font-semibold">{user.Username}</div>
@@ -80,7 +83,7 @@ const PendingApprovalsComponent = () => {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <a href="#" onClick={() => openEditModal(user)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit user</a>
+                                    <a href="#" onClick={() => openEditModal(user.UserID)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit user</a>
                                 </td>
                             </tr>
                         ))}
@@ -103,7 +106,7 @@ const PendingApprovalsComponent = () => {
                                         <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                                     </svg>
                                     <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to approve this user?</h3>
-                                    <button type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                    <button type="button" onClick={handleApprove} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                         Yes, approve
                                     </button>
                                     <button type="button" onClick={closeConfirmModal} className="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">No, cancel</button>
@@ -132,33 +135,22 @@ const PendingApprovalsComponent = () => {
                                 <div className="p-6 space-y-6">
                                     <div className="grid grid-cols-6 gap-6">
                                         <div className="col-span-6 sm:col-span-3">
-                                            <label htmlFor="first-name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First Name</label>
-                                            <input type="text" name="first-name" id="first-name" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Bonnie" required />
-                                        </div>
-                                        <div className="col-span-6 sm:col-span-3">
-                                            <label htmlFor="last-name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Last Name</label>
-                                            <input type="text" name="last-name" id="last-name" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Green" required />
-                                        </div>
-                                        <div className="col-span-6 sm:col-span-3">
-                                            <label htmlFor="last-name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Username</label>
-                                            <input type="text" name="username" id="username" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Bonnie" required />
+                                            <label htmlFor="user-name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">User Name</label>
+                                            <input type="text" id="user-name" value={selectedUser.Username} className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
                                         </div>
                                         <div className="col-span-6 sm:col-span-3">
                                             <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
-                                            <input type="email" name="email" id="email" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="example@company.com" required />
+                                            <input type="email" id="email" value={selectedUser.Email} className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
                                         </div>
-                                        {/* <div className="col-span-6 sm:col-span-3">
-                                            <label htmlFor="phone-number" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Phone Number</label>
-                                            <input type="number" name="phone-number" id="phone-number" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="e.g. +(12)3456 789" required />
-                                        </div> */}
                                         <div className="col-span-6 sm:col-span-3">
-                                            <label htmlFor="company" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Role</label>
-                                            <input type="text" name="role" id="role" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="" required />
+                                            <label htmlFor="role" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Role</label>
+                                            <input type="text" id="role" value={selectedUser.Role} className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center p-6 space-x-3 rtl:space-x-reverse border-t border-gray-200 rounded-b dark:border-gray-600">
-                                    <button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Save all</button>
+                                <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
+                                    <button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Save changes</button>
+                                    <button type="button" onClick={closeEditModal} className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600">Cancel</button>
                                 </div>
                             </form>
                         </div>
@@ -167,6 +159,6 @@ const PendingApprovalsComponent = () => {
             </div>
         </div>
     );
-}
+};
 
 export default PendingApprovalsComponent;

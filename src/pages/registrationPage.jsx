@@ -14,7 +14,7 @@ const RegistrationPage = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            let response = await axios.post('http://localhost:8080/api/auth/signup', {
+            let response = await axios.post('https://server.rcuac.lk/api/auth/signup', {
                 username,
                 role,
                 email,

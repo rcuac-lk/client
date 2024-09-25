@@ -135,8 +135,12 @@ const PendingApprovalsComponent = () => {
                                 <div className="p-6 space-y-6">
                                     <div className="grid grid-cols-6 gap-6">
                                         <div className="col-span-6 sm:col-span-3">
-                                            <label htmlFor="user-name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">User Name</label>
-                                            <input type="text" id="user-name" value={selectedUser.Username} className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
+                                            <label htmlFor="user-name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First Name</label>
+                                            <input type="text" id="user-name" value={selectedUser.FirstName} className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
+                                        </div>
+                                        <div className="col-span-6 sm:col-span-3">
+                                            <label htmlFor="user-name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Last Name</label>
+                                            <input type="text" id="user-name" value={selectedUser.LastName} className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
                                         </div>
                                         <div className="col-span-6 sm:col-span-3">
                                             <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>

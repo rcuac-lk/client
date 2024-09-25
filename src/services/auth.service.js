@@ -4,18 +4,19 @@ import TokenService from "./token.service";
 const API_URL = "http://localhost:8080/api/";
 // const API_URL = "http://server.rcuac.lk/api/auth/";
 
-const register = (username, email, password) => {
+const register = (firstName, lastName, email, password) => {
   return api.post(API_URL + "auth/signup", {
-    username,
+    firstName,
+    lastName,
     email,
     password,
   });
 };
 
-const login = (username, password) => {
+const login = (email, password) => {
   return api
     .post(API_URL + "auth/signin", {
-      username,
+      email,
       password,
     })
     .then((response) => {

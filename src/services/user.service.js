@@ -2,7 +2,7 @@
 import api from "./api";
 import authHeader from "./auth-header";
 
-// const API_URL = "http://localhost:8080/api/";
+// const API_URL = process.env.BASE_URL;
 const API_URL = "https://server.rcuac.lk/api/";
 
 // const getPublicContent = () => {

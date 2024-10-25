@@ -24,7 +24,7 @@ const RegistrationPage = () => {
       //   password,
       //   password_confirmation,
       // });
-      let response = await AuthService.register(firstName, lastName, email, password);
+      let response = await AuthService.register(firstName, lastName, role, email, password);
       console.log(response);
       if (response.status === 200) {
         console.log(response.data);

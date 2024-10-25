@@ -5,10 +5,11 @@ import TokenService from "./token.service";
 const API_URL = "https://server.rcuac.lk/api/";
 // const API_URL = process.env.ABC;
 
-const register = (firstName, lastName, email, password) => {
+const register = (firstName, lastName, role, email, password) => {
   return api.post(API_URL + "auth/signup", {
     firstName,
     lastName,
+    role,
     email,
     password,
   });

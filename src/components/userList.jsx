@@ -40,7 +40,7 @@ const UserListComponent = () => {
 
   const allUsers = async () => {
     try {
-      const response = await UserService.getAllUsers();
+      const response = await UserService.approvedUsers();
       setUsers(response.data);
     } catch (error) {
       console.error("Error fetching approved users:", error);

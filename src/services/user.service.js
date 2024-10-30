@@ -2,8 +2,8 @@
 import api from "./api";
 import authHeader from "./auth-header";
 
-// const API_URL = "http://localhost:8080/api/";
-const API_URL = "https://server.rcuac.lk/api/";
+const API_URL = "http://localhost:8080/api/";
+// const API_URL = "https://server.rcuac.lk/api/";
 
 // const getPublicContent = () => {
 //   return axios.get(API_URL + "all");
@@ -26,7 +26,7 @@ const notApprovedUsers = () => {
 }
 
 const getAllUsers = () => {
-  return api.get(API_URL + "users/getAll", { headers: authHeader() });
+  return api.get(API_URL + "users/approved", { headers: authHeader() });
 }
 
 const getUser = (id) => {
@@ -41,12 +41,17 @@ const approvedUsers = () => {
   return api.get(API_URL + "users/approved", { headers: authHeader() });
 }
 
+const updateUser = (id, data) => {
+  return api.put(API_URL + "users/updateProfile/" + id, data, { headers: authHeader() });
+}
+
 const UserService = {
   notApprovedUsers,
   getAllUsers,
   getUser,
   approveUser,
-  approvedUsers
+  approvedUsers,
+  updateUser
 };
 
 export default UserService;

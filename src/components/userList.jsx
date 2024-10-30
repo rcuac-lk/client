@@ -38,9 +38,21 @@ const UserListComponent = () => {
     }
   };
 
+  const saveChanges = async () => {
+    try {
+      await UserService.updateUser(selectedUser.UserID, selectedUser);
+      console.log(selectedUser);
+      setIsModalOpen(false);
+      allUsers(); // Refresh the user list after update
+    } catch (error) {
+      console.error("Error updating user:", error);
+    }
+  };
+
   const allUsers = async () => {
     try {
       const response = await UserService.getAllUsers();
+      console.log(response.data);
       setUsers(response.data);
     } catch (error) {
       console.error("Error fetching approved users:", error);
@@ -128,13 +140,15 @@ const UserListComponent = () => {
                       <label htmlFor="role" className="block mb-2 text-sm font-medium text-white">Role</label>
                       <select name="Role" id="role" value={selectedUser.Role || ''} onChange={handleInputChange} className="block w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white">
                         <option value="Admin">Admin</option>
-                        <option value="User">User</option>
+                        <option value="Coach">Coach</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Parent">Parent</option>
                       </select>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center p-6 space-x-2 border-t rounded-b border-gray-600">
-                  <button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Save changes</button>
+                  <button type="submit" onClick={saveChanges} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Save changes</button>
                   <button type="button" onClick={closeModal} className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">Cancel</button>
                 </div>
               </form>

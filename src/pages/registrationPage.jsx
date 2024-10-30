@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 // import axios from '../api/axios';
 import axios from "axios";
+import AuthService from "../services/auth.service";
 
 const RegistrationPage = () => {
   const navigate = useNavigate();
@@ -15,14 +16,15 @@ const RegistrationPage = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      let response = await axios.post("http://localhost:8080/api/auth/signup", {
-        firstName,
-        lastName,
-        role,
-        email,
-        password,
-        password_confirmation,
-      });
+      // let response = await axios.post("https://server.rcuac.lk/api/auth/signup", {
+      //   firstName,
+      //   lastName,
+      //   role,
+      //   email,
+      //   password,
+      //   password_confirmation,
+      // });
+      let response = await AuthService.register(firstName, lastName, role, email, password);
       console.log(response);
       if (response.status === 200) {
         console.log(response.data);

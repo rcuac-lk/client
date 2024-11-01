@@ -89,7 +89,7 @@ const UserListComponent = () => {
               <tr key={user.UserID} className="bg-gray-800 border-gray-700 hover:bg-gray-600">
                 <th scope="row" className="flex items-center px-6 py-4 whitespace-nowrap text-white">
                   <div className="ps-3">
-                    <div className="text-base font-semibold">{user.Username}</div>
+                    <div className="text-base font-semibold">{user.FirstName} {user.LastName}</div>
                     <div className="font-normal text-gray-500">{user.Email}</div>
                   </div>
                 </th>

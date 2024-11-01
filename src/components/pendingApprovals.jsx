@@ -61,6 +61,11 @@ const PendingApprovalsComponent = () => {
         }
     };
 
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setSelectedUser({ ...selectedUser, [name]: value });
+    };
+
     useEffect(() => {
         notApprovedUsers();
     }, []);
@@ -68,8 +73,8 @@ const PendingApprovalsComponent = () => {
     return (
         <div>
             <div className="relative overflow-x-auto shadow-md sm:rounded-lg mt-16">
-                <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <table className="w-full text-sm text-left rtl:text-right text-gray-400">
+                <thead className="text-xs uppercase bg-gray-700 text-gray-400">
                         <tr>
                             <th scope="col" className="px-6 py-3">Name</th>
                             <th scope="col" className="px-6 py-3">Role</th>
@@ -145,20 +150,25 @@ const PendingApprovalsComponent = () => {
                                 <div className="p-6 space-y-6">
                                     <div className="grid grid-cols-6 gap-6">
                                         <div className="col-span-6 sm:col-span-3">
-                                            <label htmlFor="user-name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First Name</label>
-                                            <input type="text" id="user-name" value={selectedUser.FirstName} className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
+                                            <label htmlFor="first-name" className="block mb-2 text-sm font-medium text-white">First Name</label>
+                                            <input type="text" name="FirstName" id="first-name" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={selectedUser.FirstName || ''} onChange={handleInputChange} required />
                                         </div>
                                         <div className="col-span-6 sm:col-span-3">
-                                            <label htmlFor="user-name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Last Name</label>
-                                            <input type="text" id="user-name" value={selectedUser.LastName} className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
+                                            <label htmlFor="last-name" className="block mb-2 text-sm font-medium text-white">Last Name</label>
+                                            <input type="text" name="LastName" id="last-name" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={selectedUser.LastName || ''} onChange={handleInputChange} required />
                                         </div>
                                         <div className="col-span-6 sm:col-span-3">
-                                            <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
-                                            <input type="email" id="email" value={selectedUser.Email} className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
+                                            <label htmlFor="email" className="block mb-2 text-sm font-medium text-white">Email</label>
+                                            <input type="email" name="Email" id="email" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={selectedUser.Email || ''} onChange={handleInputChange} required />
                                         </div>
                                         <div className="col-span-6 sm:col-span-3">
-                                            <label htmlFor="role" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Role</label>
-                                            <input type="text" id="role" value={selectedUser.Role} className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
+                                            <label htmlFor="role" className="block mb-2 text-sm font-medium text-white">Role</label>
+                                            <select name="Role" id="role" value={selectedUser.Role || ''} onChange={handleInputChange} className="block w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white">
+                                                <option value="Admin">Admin</option>
+                                                <option value="Coach">Coach</option>
+                                                <option value="Manager">Manager</option>
+                                                <option value="Parent">Parent</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>

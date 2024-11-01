@@ -102,7 +102,7 @@ const Dashboard = () => {
 
   return (
     <>
-      <nav className="fixed top-0 z-50 w-full border-b border-gray-200 bg-dark-blue dark:border-gray-700">
+      <nav className="fixed top-0 z-50 w-full border-b bg-dark-blue border-gray-700">
         <div className="px-3 py-3 lg:px-5 lg:pl-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center justify-start rtl:justify-end">
@@ -110,7 +110,7 @@ const Dashboard = () => {
                 onClick={toggleSidebar}
                 aria-controls="logo-sidebar"
                 type="button"
-                className="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+                className="inline-flex items-center p-2 text-sm rounded-lg sm:hidden focus:outline-none focus:ring-2 text-gray-400 hover:bg-gray-700 focus:ring-gray-600"
               >
                 <span className="sr-only">Open sidebar</span>
                 <svg
@@ -150,25 +150,25 @@ const Dashboard = () => {
               </div>
               {isUserMenuOpen && (
                 <div
-                  className="absolute z-50 w-48 py-2 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded shadow-lg dark:bg-gray-700 dark:divide-gray-600"
+                  className="absolute z-50 w-48 py-2 mt-2 origin-top-right divide-y rounded shadow-lg bg-gray-700 divide-gray-600"
                   id="dropdown-user"
                   style={{ top: "100%", right: "0" }}
                 >
                   <div className="px-4 py-3" role="none">
                   <p
-                      className="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
+                      className="text-sm font-medium truncate text-gray-300"
                       role="none"
                     >
                       {userDetails.roles}
                     </p>
                     <p
-                      className="text-sm text-gray-900 dark:text-white"
+                      className="text-sm text-white"
                       role="none"
                     >
                       {userDetails.firstName} {userDetails.lastName}
                     </p>
                     <p
-                      className="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
+                      className="text-sm font-medium truncate text-gray-300"
                       role="none"
                     >
                       {userDetails.email}
@@ -178,7 +178,7 @@ const Dashboard = () => {
                     <li>
                       <a
                         href="#"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
+                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-600 hover:text-white"
                         role="menuitem"
                       >
                         Dashboard
@@ -196,7 +196,7 @@ const Dashboard = () => {
                     <li>
                       <a onClick={logoutHandler}
                         href="#"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
+                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-600 hover:text-white"
                         role="menuitem"
                       >
                         Sign out
@@ -212,7 +212,7 @@ const Dashboard = () => {
 
       <aside
         id="logo-sidebar"
-        className={`fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform border-r border-gray-200 bg-dark-blue dark:border-gray-700 ${
+        className={`fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform border-r bg-dark-blue border-gray-700 ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } sm:translate-x-0`}
         aria-label="Sidebar"
@@ -223,10 +223,10 @@ const Dashboard = () => {
               <a
                 href="#"
                 onClick={() => handleMenuClick('dashboard')}
-                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+                className="flex items-center p-2 rounded-lg text-white hover:bg-gray-700 group"
               >
                 <svg
-                  className="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                  className="w-5 h-5 transition duration-75 text-gray-400 group-hover:text-white"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="currentColor"
@@ -242,10 +242,10 @@ const Dashboard = () => {
               <a
                 href="#"
                 onClick={() => handleMenuClick('userList')}
-                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+                className="flex items-center p-2 rounded-lg text-white hover:bg-gray-700 group"
               >
                 <svg
-                  className="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                  className="w-5 h-5 transition duration-75 text-gray-400 group-hover:text-white"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="currentColor"
@@ -261,10 +261,10 @@ const Dashboard = () => {
               <a
                 href="#"
                 onClick={() => handleMenuClick('pendingApprovals')}
-                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+                className="flex items-center p-2 rounded-lg text-white hover:bg-gray-700 group"
               >
                 <svg
-                  className="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                  className="w-5 h-5 transition duration-75 text-gray-400 group-hover:text-white"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="currentColor"
@@ -283,10 +283,10 @@ const Dashboard = () => {
               <li className="fixed bottom-0 left-0 w-full">
                 <a onClick={logoutHandler}
                   href="#"
-                  className="flex items-center p-4 text-gray-900 border-t border-gray-200 dark:text-white bg-dark-blue dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 group"
+                  className="flex items-center p-4 border-t text-white bg-dark-blue border-gray-700 hover:bg-gray-700 group"
                 >
                   <svg
-                    className="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                    className="flex-shrink-0 w-5 h-5 transition duration-75 text-gray-400 group-hover:text-white"
                     aria-hidden="true"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"

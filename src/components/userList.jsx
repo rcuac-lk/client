@@ -6,6 +6,8 @@ const UserListComponent = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState({});
   const [users, setUsers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
 
   const openModal = async (id) => {
     try {
@@ -58,14 +60,28 @@ const UserListComponent = () => {
     }
   };
 
+  const fetchFilteredUsers = async () => {
+    try {
+      const response = await UserService.searchUsers(searchQuery, roleFilter);
+      console.log(response.data);
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching filtered users:', error);
+    }
+  };
+
   useEffect(() => {
     allUsers();
   }, []);
 
+  useEffect(() => {
+    fetchFilteredUsers();
+  }, [searchQuery, roleFilter]);
+
   return (
     <div>
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg mt-16">
-        <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 md:space-y-0 py-4 bg-gray-900">
+        {/* <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 md:space-y-0 py-4 bg-gray-900">
           <label htmlFor="table-search" className="sr-only">Search</label>
           <div className="relative">
             <div className="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -74,6 +90,31 @@ const UserListComponent = () => {
               </svg>
             </div>
             <input type="text" id="table-search-users" className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search for users" />
+          </div>
+        </div> */}
+        <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 md:space-y-0 py-4 bg-gray-900">
+          <div className="flex space-x-4">
+            {/* Search Input */}
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder="Search by name"
+            />
+
+            {/* Role Filter */}
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="block w-40 p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white"
+            >
+              <option value="">All Roles</option>
+              <option value="Admin">Admin</option>
+              <option value="Coach">Coach</option>
+              <option value="Manager">Manager</option>
+              <option value="Parent">Parent</option>
+            </select>
           </div>
         </div>
         <table className="w-full text-sm text-left rtl:text-right text-gray-400">

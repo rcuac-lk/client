@@ -38,6 +38,10 @@ const approveUser = (id) => {
   return api.put(API_URL + "users/approve/" + id, { headers: authHeader() });
 }
 
+const rejectUser = (id) => {
+  return api.put(API_URL + "users/deactivate/" + id, { headers: authHeader() });
+}
+
 const approvedUsers = () => {
   return api.get(API_URL + "users/approved", { headers: authHeader() });
 }
@@ -50,8 +54,7 @@ const searchUsers = (search, role) => {
   const params = {};
     if (search) params.search = search;
     if (role) params.role = role;
-    console.log(params);
-    return api.get(API_URL + "users/search", params, { headers: authHeader() });
+    return api.get(API_URL + "users/search",  { params, headers: authHeader() });
 }
 
 const UserService = {
@@ -61,7 +64,8 @@ const UserService = {
   approveUser,
   approvedUsers,
   updateUser,
-  searchUsers
+  searchUsers,
+  rejectUser
 };
 
 export default UserService;

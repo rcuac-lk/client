@@ -93,7 +93,7 @@ const UserListComponent = () => {
           </div>
         </div> */}
         <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 md:space-y-0 py-4 bg-gray-900">
-          <div className="flex space-x-4">
+          <div className="flex space-x-4 px-2">
             {/* Search Input */}
             <input
               type="text"

@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import { useEffect } from 'react';
-import UserService from '../services/user.service';
+import React, { useState } from "react";
+import { useEffect } from "react";
+import UserService from "../services/user.service";
 
 const UserListComponent = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState({});
   const [users, setUsers] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
 
   const openModal = async (id) => {
     try {
@@ -22,6 +23,26 @@ const UserListComponent = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedUser({});
+  };
+
+  const openRejectModal = (user) => {
+    setSelectedUser(user);
+    setIsRejectModalOpen(true);
+  };
+
+  const closeRejectModal = () => {
+    setIsRejectModalOpen(false);
+    setSelectedUser(null);
+  };
+
+  const handleReject = async () => {
+    try {
+      await UserService.rejectUser(selectedUser.UserID);
+      closeRejectModal();
+      allUsers();
+    } catch (error) {
+      console.error("Error rejecting user:", error);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -66,7 +87,7 @@ const UserListComponent = () => {
       console.log(response.data);
       setUsers(response.data);
     } catch (error) {
-      console.error('Error fetching filtered users:', error);
+      console.error("Error fetching filtered users:", error);
     }
   };
 
@@ -120,40 +141,179 @@ const UserListComponent = () => {
         <table className="w-full text-sm text-left rtl:text-right text-gray-400">
           <thead className="text-xs uppercase bg-gray-700 text-gray-400">
             <tr>
-              <th scope="col" className="px-6 py-3">Name</th>
-              <th scope="col" className="px-6 py-3">Role</th>
-              <th scope="col" className="px-6 py-3">Action</th>
+              <th scope="col" className="px-6 py-3">
+                Name
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Role
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Action
+              </th>
+              <th scope="col" className="py-3"></th>
             </tr>
           </thead>
           <tbody>
-            {users.map(user => (
-              <tr key={user.UserID} className="bg-gray-800 border-gray-700 hover:bg-gray-600">
-                <th scope="row" className="flex items-center px-6 py-4 whitespace-nowrap text-white">
+            {users.map((user) => (
+              <tr
+                key={user.UserID}
+                className="bg-gray-800 border-gray-700 hover:bg-gray-600"
+              >
+                <th
+                  scope="row"
+                  className="flex items-center px-6 py-4 whitespace-nowrap text-white"
+                >
                   <div className="ps-3">
-                    <div className="text-base font-semibold">{user.FirstName} {user.LastName}</div>
-                    <div className="font-normal text-gray-500">{user.Email}</div>
+                    <div className="text-base font-semibold">
+                      {user.FirstName} {user.LastName}
+                    </div>
+                    <div className="font-normal text-gray-500">
+                      {user.Email}
+                    </div>
                   </div>
                 </th>
                 <td className="px-6 py-4">{user.Role}</td>
                 <td className="px-6 py-4">
-                  <a href="#" onClick={() => openModal(user.UserID)} className="font-medium text-blue-500 hover:underline">Edit user</a>
+                  <a
+                    href="#"
+                    onClick={() => openModal(user.UserID)}
+                    className="font-medium text-blue-500 hover:underline"
+                  >
+                    Edit user
+                  </a>
+                </td>
+                <td className="py-4">
+                  <div className="flex items-center">
+                    <button
+                      type="button"
+                      onClick={() => openRejectModal(user)}
+                      className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                    >
+                      Remove User
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
 
+        {/* Reject Modal */}
+        {isRejectModalOpen && (
+          <div
+            id="reject-modal"
+            tabIndex="-1"
+            aria-hidden="true"
+            className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full"
+          >
+            <div className="relative w-full max-w-md max-h-full">
+              <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                <button
+                  type="button"
+                  onClick={closeRejectModal}
+                  className="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                >
+                  <svg
+                    className="w-3 h-3"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 14 14"
+                  >
+                    <path
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                    />
+                  </svg>
+                  <span className="sr-only">Close modal</span>
+                </button>
+                <div className="p-4 md:p-5 text-center">
+                  <svg
+                    className="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                  </svg>
+                  <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+                    Are you sure you want to remove this user?
+                  </h3>
+                  {/* Display User Name and Email */}
+                  <div className="mb-4 text-center">
+                    <p className="text-gray-600 dark:text-gray-300">
+                      <strong>Name:</strong> {selectedUser.FirstName}{" "}
+                      {selectedUser.LastName}
+                    </p>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      <strong>Email:</strong> {selectedUser.Email}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleReject}
+                    className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  >
+                    Yes, remove
+                  </button>
+                  <button
+                    type="button"
+                    onClick={closeRejectModal}
+                    className="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                  >
+                    No, cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {isModalOpen && (
-          <div id="editUserModal" tabIndex="-1" aria-hidden="true" className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+          <div
+            id="editUserModal"
+            tabIndex="-1"
+            aria-hidden="true"
+            className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full"
+          >
             <div className="relative w-full max-w-2xl max-h-full">
-              <form onSubmit={handleSubmit} className="relative rounded-lg shadow bg-gray-700">
+              <form
+                onSubmit={handleSubmit}
+                className="relative rounded-lg shadow bg-gray-700"
+              >
                 <div className="flex items-start justify-between p-4 rounded-t border-gray-600">
                   <h3 className="text-xl font-semibold text-white">
                     Edit user
                   </h3>
-                  <button type="button" onClick={closeModal} className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
-                    <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                  >
+                    <svg
+                      className="w-3 h-3"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 14 14"
+                    >
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                      />
                     </svg>
                     <span className="sr-only">Close modal</span>
                   </button>
@@ -161,24 +321,74 @@ const UserListComponent = () => {
                 <div className="p-6 space-y-6">
                   <div className="grid grid-cols-6 gap-6">
                     <div className="col-span-6 sm:col-span-3">
-                      <label htmlFor="first-name" className="block mb-2 text-sm font-medium text-white">First Name</label>
-                      <input type="text" name="FirstName" id="first-name" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={selectedUser.FirstName || ''} onChange={handleInputChange} required />
+                      <label
+                        htmlFor="first-name"
+                        className="block mb-2 text-sm font-medium text-white"
+                      >
+                        First Name
+                      </label>
+                      <input
+                        type="text"
+                        name="FirstName"
+                        id="first-name"
+                        className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        value={selectedUser.FirstName || ""}
+                        onChange={handleInputChange}
+                        required
+                      />
                     </div>
                     <div className="col-span-6 sm:col-span-3">
-                      <label htmlFor="last-name" className="block mb-2 text-sm font-medium text-white">Last Name</label>
-                      <input type="text" name="LastName" id="last-name" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={selectedUser.LastName || ''} onChange={handleInputChange} required />
+                      <label
+                        htmlFor="last-name"
+                        className="block mb-2 text-sm font-medium text-white"
+                      >
+                        Last Name
+                      </label>
+                      <input
+                        type="text"
+                        name="LastName"
+                        id="last-name"
+                        className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        value={selectedUser.LastName || ""}
+                        onChange={handleInputChange}
+                        required
+                      />
                     </div>
                     {/* <div className="col-span-6 sm:col-span-3">
                       <label htmlFor="username" className="block mb-2 text-sm font-medium text-white">Username</label>
                       <input type="text" name="Username" id="username" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={selectedUser.Username || ''} onChange={handleInputChange} required />
                     </div> */}
                     <div className="col-span-6 sm:col-span-3">
-                      <label htmlFor="email" className="block mb-2 text-sm font-medium text-white">Email</label>
-                      <input type="email" name="Email" id="email" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={selectedUser.Email || ''} onChange={handleInputChange} required />
+                      <label
+                        htmlFor="email"
+                        className="block mb-2 text-sm font-medium text-white"
+                      >
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        name="Email"
+                        id="email"
+                        className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        value={selectedUser.Email || ""}
+                        onChange={handleInputChange}
+                        required
+                      />
                     </div>
                     <div className="col-span-6 sm:col-span-3">
-                      <label htmlFor="role" className="block mb-2 text-sm font-medium text-white">Role</label>
-                      <select name="Role" id="role" value={selectedUser.Role || ''} onChange={handleInputChange} className="block w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white">
+                      <label
+                        htmlFor="role"
+                        className="block mb-2 text-sm font-medium text-white"
+                      >
+                        Role
+                      </label>
+                      <select
+                        name="Role"
+                        id="role"
+                        value={selectedUser.Role || ""}
+                        onChange={handleInputChange}
+                        className="block w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white"
+                      >
                         <option value="Admin">Admin</option>
                         <option value="Coach">Coach</option>
                         <option value="Manager">Manager</option>
@@ -188,8 +398,20 @@ const UserListComponent = () => {
                   </div>
                 </div>
                 <div className="flex items-center p-6 space-x-2 border-t rounded-b border-gray-600">
-                  <button type="submit" onClick={saveChanges} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Save changes</button>
-                  <button type="button" onClick={closeModal} className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">Cancel</button>
+                  <button
+                    type="submit"
+                    onClick={saveChanges}
+                    className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  >
+                    Save changes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </form>
             </div>

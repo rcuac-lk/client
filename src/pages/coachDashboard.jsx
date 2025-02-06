@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
-import AuthService from '../services/auth.service';
+import AuthService from "../services/auth.service";
+import UserService from "../services/user.service";
+import UserListComponent from "../components/userList";
+import PendingApprovalsComponent from "../components/pendingApprovals";
+import Attendance from "../components/attendance";
+import Timing from "../components/timing";
 
 const CoachDashboard = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -9,9 +14,46 @@ const CoachDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isUnauthorized, setIsUnauthorized] = useState(false);
   const navigate = useNavigate();
+  const [selectedSection, setSelectedSection] = useState('dashboard');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const openEditModal = async (id) => {
+    try {
+        const response = await UserService.getUser(id);
+        setSelectedUser(response.data);
+        setIsEditModalOpen(true);
+    } catch (error) {
+        console.error("Error fetching user details:", error);
+    }
+};
+
+const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedUser(null);
+};
+  
+const saveChanges = async () => {
+  try {
+    await UserService.updateUser(selectedUser.UserID, selectedUser);
+    setIsEditModalOpen(false);
+    notApprovedUsers(); // Refresh the user list after update
+  } catch (error) {
+    console.error("Error updating user:", error);
+  }
+};
+
+const handleInputChange = (e) => {
+  const { name, value } = e.target;
+  setSelectedUser({ ...selectedUser, [name]: value });
+};
 
   const toggleSidebar = () => {
     setSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleMenuClick = (section) => {
+    setSelectedSection(section);
   };
 
   const toggleUserMenu = () => {
@@ -49,9 +91,19 @@ const CoachDashboard = () => {
     }
   };
 
+  const notApprovedUsers = async () => {
+    try {
+      const response = await UserService.notApprovedUsers();
+      console.log('Not Approved Users:', response.data[0]);
+    } catch (error) {
+      console.error("Error fetching not approved users:", error);
+    }
+  };
+
   useEffect(() => {
 
     fetchUserDetails();
+    notApprovedUsers();
 
     const handleOutsideClick = (event) => {
       if (
@@ -84,7 +136,7 @@ const CoachDashboard = () => {
 
   return (
     <>
-      <nav className="fixed top-0 z-50 w-full border-b border-gray-200 bg-dark-blue dark:border-gray-700">
+      <nav className="fixed top-0 z-50 w-full border-b bg-dark-blue border-gray-700">
         <div className="px-3 py-3 lg:px-5 lg:pl-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center justify-start rtl:justify-end">
@@ -92,7 +144,7 @@ const CoachDashboard = () => {
                 onClick={toggleSidebar}
                 aria-controls="logo-sidebar"
                 type="button"
-                className="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+                className="inline-flex items-center p-2 text-sm rounded-lg sm:hidden focus:outline-none focus:ring-2 text-gray-400 hover:bg-gray-700 focus:ring-gray-600"
               >
                 <span className="sr-only">Open sidebar</span>
                 <svg
@@ -118,7 +170,7 @@ const CoachDashboard = () => {
                 <button
                   type="button"
                   onClick={toggleUserMenu}
-                  className="flex text-sm bg-dark-blue rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
+                  className="flex text-sm bg-dark-blue rounded-full focus:ring-4 focus:ring-gray-600"
                   aria-expanded={isUserMenuOpen}
                   data-dropdown-toggle="dropdown-user"
                 >
@@ -132,25 +184,25 @@ const CoachDashboard = () => {
               </div>
               {isUserMenuOpen && (
                 <div
-                  className="absolute z-50 w-48 py-2 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded shadow-lg dark:bg-gray-700 dark:divide-gray-600"
+                  className="absolute z-50 w-48 py-2 mt-2 origin-top-right divide-y rounded shadow-lg bg-gray-700 divide-gray-600"
                   id="dropdown-user"
                   style={{ top: "100%", right: "0" }}
                 >
                   <div className="px-4 py-3" role="none">
                   <p
-                      className="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
+                      className="text-sm font-medium truncate text-gray-300"
                       role="none"
                     >
-                      {userDetails.role}
+                      {userDetails.roles}
                     </p>
                     <p
-                      className="text-sm text-gray-900 dark:text-white"
+                      className="text-sm text-white"
                       role="none"
                     >
-                      {userDetails.name}
+                      {userDetails.firstName} {userDetails.lastName}
                     </p>
                     <p
-                      className="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
+                      className="text-sm font-medium truncate text-gray-300"
                       role="none"
                     >
                       {userDetails.email}
@@ -160,25 +212,17 @@ const CoachDashboard = () => {
                     <li>
                       <a
                         href="#"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
+                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-600 hover:text-white"
                         role="menuitem"
+                        onClick={() => openEditModal(userDetails.id)}
                       >
-                        Dashboard
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
-                        role="menuitem"
-                      >
-                        Settings
+                        Profile
                       </a>
                     </li>
                     <li>
                       <a onClick={logoutHandler}
                         href="#"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
+                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-600 hover:text-white"
                         role="menuitem"
                       >
                         Sign out
@@ -194,7 +238,7 @@ const CoachDashboard = () => {
 
       <aside
         id="logo-sidebar"
-        className={`fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform border-r border-gray-200 bg-dark-blue dark:border-gray-700 ${
+        className={`fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform border-r bg-dark-blue border-gray-700 ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } sm:translate-x-0`}
         aria-label="Sidebar"
@@ -204,10 +248,11 @@ const CoachDashboard = () => {
             <li>
               <a
                 href="#"
-                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+                onClick={() => handleMenuClick('dashboard')}
+                className="flex items-center p-2 rounded-lg text-white hover:bg-gray-700 group"
               >
                 <svg
-                  className="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                  className="w-5 h-5 transition duration-75 text-gray-400 group-hover:text-white"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="currentColor"
@@ -219,17 +264,94 @@ const CoachDashboard = () => {
                 <span className="ms-3">Dashboard</span>
               </a>
             </li>
+            <li>
+              <a
+                href="#"
+                onClick={() => handleMenuClick('userList')}
+                className="flex items-center p-2 rounded-lg text-white hover:bg-gray-700 group"
+              >
+                <svg
+                  className="w-5 h-5 transition duration-75 text-gray-400 group-hover:text-white"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 22 21"
+                >
+                  <path d="M16.975 11H10V4.025a1 1 0 0 0-1.066-.998 8.5 8.5 0 1 0 9.039 9.039.999.999 0 0 0-1-1.066h.002Z" />
+                  <path d="M12.5 0c-.157 0-.311.01-.565.027A1 1 0 0 0 11 1.02V10h8.975a1 1 0 0 0 1-.935c.013-.188.028-.374.028-.565A8.51 8.51 0 0 0 12.5 0Z" />
+                </svg>
+                <span className="ms-3">User List</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                onClick={() => handleMenuClick('pendingApprovals')}
+                className="flex items-center p-2 rounded-lg text-white hover:bg-gray-700 group"
+              >
+                <svg
+                  className="w-5 h-5 transition duration-75 text-gray-400 group-hover:text-white"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 22 21"
+                >
+                  <path d="M16.975 11H10V4.025a1 1 0 0 0-1.066-.998 8.5 8.5 0 1 0 9.039 9.039.999.999 0 0 0-1-1.066h.002Z" />
+                  <path d="M12.5 0c-.157 0-.311.01-.565.027A1 1 0 0 0 11 1.02V10h8.975a1 1 0 0 0 1-.935c.013-.188.028-.374.028-.565A8.51 8.51 0 0 0 12.5 0Z" />
+                </svg>
+                <span className="ms-3">Pending Approvals</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                onClick={() => handleMenuClick('attendance')}
+                className="flex items-center p-2 rounded-lg text-white hover:bg-gray-700 group"
+              >
+                <svg
+                  className="w-5 h-5 transition duration-75 text-gray-400 group-hover:text-white"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 22 21"
+                >
+                  <path d="M16.975 11H10V4.025a1 1 0 0 0-1.066-.998 8.5 8.5 0 1 0 9.039 9.039.999.999 0 0 0-1-1.066h.002Z" />
+                  <path d="M12.5 0c-.157 0-.311.01-.565.027A1 1 0 0 0 11 1.02V10h8.975a1 1 0 0 0 1-.935c.013-.188.028-.374.028-.565A8.51 8.51 0 0 0 12.5 0Z" />
+                </svg>
+                <span className="ms-3">Attendance</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                onClick={() => handleMenuClick('timing')}
+                className="flex items-center p-2 rounded-lg text-white hover:bg-gray-700 group"
+              >
+                <svg
+                  className="w-5 h-5 transition duration-75 text-gray-400 group-hover:text-white"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 22 21"
+                >
+                  <path d="M16.975 11H10V4.025a1 1 0 0 0-1.066-.998 8.5 8.5 0 1 0 9.039 9.039.999.999 0 0 0-1-1.066h.002Z" />
+                  <path d="M12.5 0c-.157 0-.311.01-.565.027A1 1 0 0 0 11 1.02V10h8.975a1 1 0 0 0 1-.935c.013-.188.028-.374.028-.565A8.51 8.51 0 0 0 12.5 0Z" />
+                </svg>
+                <span className="ms-3">Timing</span>
+              </a>
+            </li>
             {/* Other items here */}
+
           </ul>
           <div className="mt-auto">
             <ul className="space-y-2 font-medium">
               <li className="fixed bottom-0 left-0 w-full">
                 <a onClick={logoutHandler}
                   href="#"
-                  className="flex items-center p-4 text-gray-900 border-t border-gray-200 dark:text-white bg-dark-blue dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 group"
+                  className="flex items-center p-4 border-t text-white bg-dark-blue border-gray-700 hover:bg-gray-700 group"
                 >
                   <svg
-                    className="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                    className="flex-shrink-0 w-5 h-5 transition duration-75 text-gray-400 group-hover:text-white"
                     aria-hidden="true"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -252,17 +374,80 @@ const CoachDashboard = () => {
       </aside>
 
       <div className="p-4 sm:ml-64">
-        <div className="overflow-hidden min-h-screen max-w-6xl mx-auto flex flex-col items-center justify-center m-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">
-            Dashboard
-          </h1>
-          <div className="mt-4">
-            <p className="text-gray-900">
-              Welcome to RCUAC Admin Dashboard
-            </p>
-          </div>
+        <div className="overflow-hidden min-h-screen flex flex-col">
+          {selectedSection === 'dashboard' && (
+            <>
+              <div className="flex flex-col items-center mx-auto justify-center m-auto">
+              <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+              <div className="mt-4">
+                <p className="text-gray-900">Welcome to RCUAC Coach Dashboard</p>
+              </div>
+              </div>
+            </>
+          )}
+          {selectedSection === 'userList' && (
+            <UserListComponent /> // Replace with actual User List component or content
+          )}
+          {selectedSection === 'pendingApprovals' && (
+            <PendingApprovalsComponent /> // Replace with actual Pending Approvals component or content
+          )}
+          {selectedSection === 'attendance' && (
+            <Attendance />
+          )}
+          {selectedSection === 'timing' && (
+            <Timing />
+          )}
         </div>
       </div>
+
+      {isEditModalOpen && (
+                    <div id="editUserModal" tabIndex="-1" aria-hidden="true" className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                        <div className="relative w-full max-w-2xl max-h-full">
+                            <form className="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                                <div className="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
+                                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                                        Edit Profile
+                                    </h3>
+                                    <button type="button" onClick={closeEditModal} className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                        <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                        </svg>
+                                        <span className="sr-only">Close modal</span>
+                                    </button>
+                                </div>
+                                <div className="p-6 space-y-6">
+                                    <div className="grid grid-cols-6 gap-6">
+                                        <div className="col-span-6 sm:col-span-3">
+                                            <label htmlFor="first-name" className="block mb-2 text-sm font-medium text-white">First Name</label>
+                                            <input type="text" name="FirstName" id="first-name" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={selectedUser.FirstName || ''} onChange={handleInputChange} required />
+                                        </div>
+                                        <div className="col-span-6 sm:col-span-3">
+                                            <label htmlFor="last-name" className="block mb-2 text-sm font-medium text-white">Last Name</label>
+                                            <input type="text" name="LastName" id="last-name" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={selectedUser.LastName || ''} onChange={handleInputChange} required />
+                                        </div>
+                                        <div className="col-span-6 sm:col-span-3">
+                                            <label htmlFor="email" className="block mb-2 text-sm font-medium text-white">Email</label>
+                                            <input type="email" name="Email" id="email" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={selectedUser.Email || ''} onChange={handleInputChange} required />
+                                        </div>
+                                        <div className="col-span-6 sm:col-span-3">
+                                            <label htmlFor="role" className="block mb-2 text-sm font-medium text-white">Role</label>
+                                            <select name="Role" id="role" value={selectedUser.Role || ''} disabled onChange={handleInputChange} className="block w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white">
+                                                <option value="Admin">Admin</option>
+                                                <option value="Coach">Coach</option>
+                                                <option value="Manager">Manager</option>
+                                                <option value="Parent">Parent</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
+                                    <button type="submit" onClick={saveChanges} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Save changes</button>
+                                    <button type="button" onClick={closeEditModal} className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
     </>
   );
 };

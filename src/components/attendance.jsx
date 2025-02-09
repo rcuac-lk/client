@@ -9,7 +9,33 @@ const UserListComponent = () => {
   const [ageFilter, setAgeFilter] = useState("");
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
   const [isPresent, setIsPresent] = useState(null);
+  const [ageCategories, setAgeCategories] = useState([]);
 
+  const getAgeGroups = () => {
+    /**
+     * The AgeCategory field is used to filter the students based on their age.
+     * This function will get the acceptable age category groups from the backend.
+     */
+    const response = {
+        "data": [
+          {name : "All Ages", value: ""},
+          {name : "Under 11", value: "Under 11"},
+          {name : "Under 13", value: "Under 13"},
+          {name : "Under 15", value: "Under 15"},
+          {name : "Under 17", value: "Under 17"},
+          {name : "Under 19", value: "Under 19"},
+        ],
+        "request": {}
+      };
+
+      return response;
+  }
+
+  useEffect(() => {
+    const response = getAgeGroups();
+    setAgeCategories(response.data);
+    console.log(response.data);
+  }, []);
 
   const getStudentsData = () => { 
     /** the responce data should be fetched from the backend
@@ -152,11 +178,11 @@ const UserListComponent = () => {
               onChange={(e) => setAgeFilter(e.target.value)}
               className="block w-40 p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white"
             >
-              <option value="">All Ages</option>
-              <option value="Under 11">Under 11</option>
-              <option value="Under 13">Under 13</option>
-              <option value="Under 15">Under 15</option>
-              <option value="Under 17">Under 17</option>
+              {ageCategories.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.name}
+                </option>
+              ))}
             </select>
           </div>
         </div>

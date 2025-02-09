@@ -12,7 +12,7 @@ const UserListComponent = () => {
 
 
   const getStudentsData = () => { 
-    /** The responce data should be fetched from the backend
+    /** the responce data should be fetched from the backend
      * The LastUpdate field is used to determine if the student attendance is already set or not for the current date.
      * if LastUpdate === "", then the student attendance is not set for the current date.
      * The AgeCategory field is used to filter the students based on their age.
@@ -23,7 +23,8 @@ const UserListComponent = () => {
               "UserID": 1000,
               "AdmisionNumber": "2364/5743",
               "LastUpdate": "",
-              "LastUpdateBy": "Not Available",
+              "LastUpdateBy": "",
+              "LastUpdateAt": "",
               "AgeCategory": "Under 13",
               "FirstName": "Ann",
               "LastName": "Romanowski",
@@ -32,7 +33,8 @@ const UserListComponent = () => {
               "UserID": 1001,
               "AdmisionNumber": "2365/5744",
               "LastUpdate": "Present",
-              "LastUpdateBy": "Doltan Palanda, at 10:10 AM",
+              "LastUpdateBy": "Doltan Palanda",
+              "LastUpdateAt": "10:10 AM",
               "AgeCategory": "Under 13",
               "FirstName": "Nancy",
               "LastName": "Sicari",
@@ -41,7 +43,8 @@ const UserListComponent = () => {
               "UserID": 1002,
               "AdmisionNumber": "2365/5744",
               "LastUpdate": "Absent",
-              "LastUpdateBy": "Doltan Palanda, at 09:18 AM",
+              "LastUpdateBy": "Doltan Palanda",
+              "LastUpdateAt": "09:55 AM",
               "AgeCategory": "Under 17",
               "FirstName": "Jim",
               "LastName": "Pappa",
@@ -49,7 +52,8 @@ const UserListComponent = () => {
             {
               "UserID": 1003,
               "AdmisionNumber": "2365/5744",
-              "LastUpdateBy": "Doltan Palanda, at 09:18 AM",
+              "LastUpdateBy": "Doltan Palanda",
+              "LastUpdateAt": "10:09 AM",
               "LastUpdate": "Present",
               "AgeCategory": "Under 11",
               "FirstName": "Vital",
@@ -161,8 +165,9 @@ const UserListComponent = () => {
             <tr>
               <th scope="col" className="px-6 py-3">Name</th>
               <th scope="col" className="px-6 py-3">Age Group</th>
-              <th scope="col" className="px-6 py-3">Record</th>
               <th scope="col" className="py-3">Attendance</th>
+              <th scope="col" className="px-6 py-3">Record</th>
+              <th scope="col" className="px-6 py-3">Recorded at</th>
             </tr>
           </thead>
           <tbody>
@@ -179,10 +184,7 @@ const UserListComponent = () => {
                   </div>
                 </th>
                 <td className="px-6 py-4">{user.AgeCategory}</td>
-                <td className="px-6 py-4">
-                  {user.LastUpdate}
-                </td>
-                <td className="px-6 py-2 flex">
+                <td className="px-2 py-2 flex">
                   <div className="flex items-center">
                     <button type="button" onClick={() => openChangeModal(user,"Present")} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"> Present </button>
                   </div>
@@ -190,6 +192,8 @@ const UserListComponent = () => {
                     <button type="button" onClick={() => openChangeModal(user,"Absent")} className="text-white bg-red-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"> Absent </button>
                   </div>
                 </td>
+                <td className="px-6 py-4">{user.LastUpdate}</td>
+                <td className="px-6 py-4">{user.LastUpdateAt}</td>
               </tr>
             ))}
           </tbody>
@@ -249,7 +253,7 @@ const UserListComponent = () => {
                   {/* Display User Name and Email */}
                   <div className="mb-4 text-center">
                     <p className="text-gray-600 dark:text-gray-300">
-                      <strong>Last Update by : </strong> {selectedUser.LastUpdateBy}
+                      Marked as <strong> {selectedUser.LastUpdate} </strong> by <strong>{selectedUser.LastUpdateBy}</strong> at {selectedUser.LastUpdateAt}
                     </p>
                   </div>
                   <button

@@ -3,20 +3,21 @@ import { useEffect } from "react";
 import UserService from "../services/user.service";
 
 const UserListComponent = () => {
+  /** varianbles*/
   const [selectedUser, setSelectedUser] = useState({});
-  const [users, setUsers] = useState([]);
+  const [students, setStudents] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [ageFilter, setAgeFilter] = useState("");
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
   const [isPresent, setIsPresent] = useState(null);
   const [ageCategories, setAgeCategories] = useState([]);
 
+  /** functions */
   const getAgeGroups = () => {
-    /**
-     * The AgeCategory field is used to filter the students based on their age.
-     * This function will get the acceptable age category groups from the backend.
-     */
+    /** The AgeCategory field is used to filter the students based on their age.
+     * This function will get the acceptable age category groups from the backend. */
     const response = {
+      /** dummy data. Get this from backend. */
         "data": [
           {name : "All Ages", value: ""},
           {name : "Under 11", value: "Under 11"},
@@ -27,23 +28,16 @@ const UserListComponent = () => {
         ],
         "request": {}
       };
-
       return response;
   }
-
-  useEffect(() => {
-    const response = getAgeGroups();
-    setAgeCategories(response.data);
-    console.log(response.data);
-  }, []);
 
   const getStudentsData = () => { 
     /** the responce data should be fetched from the backend
      * The LastUpdate field is used to determine if the student attendance is already set or not for the current date.
      * if LastUpdate === "", then the student attendance is not set for the current date.
-     * The AgeCategory field is used to filter the students based on their age.
-     */
+     * The AgeCategory field is used to filter the students based on their age. */
     const response = {
+      /** dummy data. Get this from backend. */
         "data": [
             {
               "UserID": 1000,
@@ -92,40 +86,40 @@ const UserListComponent = () => {
     }
 
   const getStudentsFiltered = () => {
-
+    /** Filter the student data using the user selection. We will use searchQuery and ageFilter*/
     const response = getStudentsData();
-      const filteredData = response.data.filter(user => {
+      const filteredData = response.data.filter(student => {
         const matchesSearchQuery = searchQuery === "" || 
-        user.FirstName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        user.LastName.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesRoleFilter = ageFilter === "" || user.AgeCategory === ageFilter;
+        student.FirstName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        student.LastName.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesRoleFilter = ageFilter === "" || student.AgeCategory === ageFilter;
         return matchesSearchQuery && matchesRoleFilter;
       });
-
       return { ...response, data: filteredData };
   }
 
-  const openChangeModal = (user,isPresent) => {
-    //console.log("openChangeModal INPUT student (", user.FirstName, user.LastName, ") => ", isPresent);
-    /** Check if the last update is "", which means this is the first update for today */
-    if(user.LastUpdate === "") {
-        console.log("Set Attendance of", user.LastName,"to", isPresent);
-        //call backend function setAttendance(user.UserID, isPresent);
-        fetchFilteredUsers(); //load all user data.
+  const openChangeModal = (student,isPresent) => {
+    /** Check the change request, (which button was pressed) and open the Attandance 
+     * Change dialog box if the student is not already marked as present or absent.
+     * The LastUpdate variable halds the status if the student was atleast marked once today*/
+    if(student.LastUpdate === "") {
+        console.log("Set Attendance of", student.LastName,"to", isPresent);
+        /** call backend function setAttendance(student.UserID, isPresent); */
+        fetchFilteredStudents(); //load all student data.
     }
-    else if(user.LastUpdate === isPresent) {
-        console.log("Attendance already set to",isPresent, " for", user.LastName);
-        fetchFilteredUsers(); //load all user data.
+    else if(student.LastUpdate === isPresent) {
+        console.log("Attendance already set to",isPresent, " for", student.LastName);
+        fetchFilteredStudents(); //load all student data.
     }
     else {
-        setSelectedUser(user);
+        /** Open the dialogbox to get the change */
+        setSelectedUser(student);
         setIsPresent(isPresent);
         setIsChangeModalOpen(true);
     }
   };
 
   const closeChangeModal = () => {
-    console.log("closeChangeModal");
     setIsChangeModalOpen(false);
     setSelectedUser(null);
     setIsPresent(null);
@@ -134,29 +128,37 @@ const UserListComponent = () => {
   const handleChange = async () => {
     console.log("handleChange", selectedUser.FirstName, selectedUser.LastName, "set to Present = ", isPresent);
     try {
-        //call backend function setAttendance(selectedUser.UserID, isPresent);
+        /**call backend function setAttendance(selectedUser.UserID, isPresent); */
       closeChangeModal();
-      fetchFilteredUsers();
+      fetchFilteredStudents();
     } catch (error) {
-      console.error("Error rejecting user:", error);
+      console.error("Error Change Attendande:", error);
     }
   };
 
-  const fetchFilteredUsers = async () => {
-    console.log("fetchFilteredUsers");
+  const fetchFilteredStudents = async () => {
+    console.log("fetchFilteredStudents");
     try {
-      //const response = await UserService.searchUsers(searchQuery, ageFilter);
+      /** const response = await UserService.searchUsers(searchQuery, ageFilter); */
       const response = getStudentsFiltered();
       console.log(response.data);
-      setUsers(response.data);
+      setStudents(response.data);
     } catch (error) {
-      console.error("Error fetching filtered users:", error);
+      console.error("Error fetching filtered Students:", error);
     }
   };
 
+  /** load the student data */
   useEffect(() => {
-    fetchFilteredUsers();
+    fetchFilteredStudents();
   }, [searchQuery, ageFilter]);
+
+  /** load the age categories */
+  useEffect(() => {
+    const response = getAgeGroups();
+    setAgeCategories(response.data);
+    console.log("Use Age Categories", response.data);
+  }, []);
 
   return (
     <div>
@@ -197,29 +199,29 @@ const UserListComponent = () => {
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
-              <tr key={user.UserID} className="bg-gray-800 border-gray-700 hover:bg-gray-600">
+            {students.map((student) => (
+              <tr key={student.UserID} className="bg-gray-800 border-gray-700 hover:bg-gray-600">
                 <th scope="row" className="flex items-center px-6 py-4 whitespace-nowrap text-white">
                   <div className="ps-3">
                     <div className="text-base font-semibold">
-                      {user.FirstName} {user.LastName}
+                      {student.FirstName} {student.LastName}
                     </div>
                     <div className="font-normal text-gray-500">
-                      {user.Email}
+                      {student.Email}
                     </div>
                   </div>
                 </th>
-                <td className="px-6 py-4">{user.AgeCategory}</td>
+                <td className="px-6 py-4">{student.AgeCategory}</td>
                 <td className="px-2 py-2 flex">
                   <div className="flex items-center">
-                    <button type="button" onClick={() => openChangeModal(user,"Present")} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"> Present </button>
+                    <button type="button" onClick={() => openChangeModal(student,"Present")} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"> Present </button>
                   </div>
                   <div className="flex items-center">
-                    <button type="button" onClick={() => openChangeModal(user,"Absent")} className="text-white bg-red-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"> Absent </button>
+                    <button type="button" onClick={() => openChangeModal(student,"Absent")} className="text-white bg-red-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"> Absent </button>
                   </div>
                 </td>
-                <td className="px-6 py-4">{user.LastUpdate}</td>
-                <td className="px-6 py-4">{user.LastUpdateAt}</td>
+                <td className="px-6 py-4">{student.LastUpdate}</td>
+                <td className="px-6 py-4">{student.LastUpdateAt}</td>
               </tr>
             ))}
           </tbody>
@@ -274,9 +276,9 @@ const UserListComponent = () => {
                     />
                   </svg>
                   <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-                    Are you sure you want to mark attendance as <strong>{isPresent}</strong> for <strong> {selectedUser.FirstName}{" "}{selectedUser.LastName}</strong>?
+                    Are you sure you want to change the attendance of <strong> {selectedUser.FirstName}{" "}{selectedUser.LastName}</strong> to <strong>{isPresent}</strong>?
                   </h3>
-                  {/* Display User Name and Email */}
+                  {/* Display current marked data */}
                   <div className="mb-4 text-center">
                     <p className="text-gray-600 dark:text-gray-300">
                       Marked as <strong> {selectedUser.LastUpdate} </strong> by <strong>{selectedUser.LastUpdateBy}</strong> at {selectedUser.LastUpdateAt}

@@ -206,9 +206,6 @@ const UserListComponent = () => {
                     <div className="text-base font-semibold">
                       {student.FirstName} {student.LastName}
                     </div>
-                    <div className="font-normal text-gray-500">
-                      {student.Email}
-                    </div>
                   </div>
                 </th>
                 <td className="px-6 py-4">{student.AgeCategory}</td>

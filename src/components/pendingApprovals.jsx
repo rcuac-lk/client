@@ -1,17 +1,33 @@
 import { useEffect, useState } from 'react';
 import UserService from '../services/user.service';
+import ManagerService from '../services/manager.service';
+import CoachService from '../services/coach.service';
 
-const PendingApprovalsComponent = () => {
+const PendingApprovalsComponent = (props) => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null); // To store the selected user's data
 
+    const userRole = props.role;
+    const isAdmin = userRole === "Admin";
+    const isManager = userRole === "Manager";
+    const isCoach = userRole === "Coach";
+
     const openEditModal = async (id) => {
         try {
-            const response = await UserService.getUser(id);
-            setSelectedUser(response.data);
+            let response = "";
+            if (isAdmin) {
+                response = await UserService.getUser(id);
+                setSelectedUser(response.data);
+            } else if (isManager) {
+                response = await ManagerService.getUser(id);
+                setSelectedUser(response.data);
+            } else if (isCoach) {
+                response = await CoachService.getUser(id);
+                setSelectedUser(response.data);
+            }
             setIsEditModalOpen(true);
         } catch (error) {
             console.error("Error fetching user details:", error);
@@ -45,7 +61,13 @@ const PendingApprovalsComponent = () => {
 
     const handleApprove = async () => {
         try {
-            await UserService.approveUser(selectedUser.UserID);
+            if (isAdmin) {
+                await UserService.approveUser(selectedUser.UserID);
+            } else if (isManager) {
+                await ManagerService.approveUser(selectedUser.UserID);
+            } else if (isCoach) {
+                await CoachService.approveUser(selectedUser.UserID);
+            }
             closeConfirmModal();
             notApprovedUsers();
         } catch (error) {
@@ -55,7 +77,13 @@ const PendingApprovalsComponent = () => {
 
     const handleReject = async () => {
         try {
-            await UserService.rejectUser(selectedUser.UserID);
+            if (isAdmin) {
+                await UserService.rejectUser(selectedUser.UserID);
+            } else if (isManager) {
+                await ManagerService.rejectUser(selectedUser.UserID);
+            } else if (isCoach) {
+                await CoachService.rejectUser(selectedUser.UserID);
+            }
             closeRejectModal();
             notApprovedUsers();
         } catch (error) {
@@ -75,8 +103,18 @@ const PendingApprovalsComponent = () => {
 
     const notApprovedUsers = async () => {
         try {
-            const response = await UserService.notApprovedUsers();
-            setUsers(response.data);
+            let response = "";
+            if (isAdmin) {
+                response = await UserService.notApprovedUsers();
+                setUsers(response.data);
+                console.log(response.data);
+            } else if (isManager) {
+                response = await ManagerService.notApprovedUsers();
+                setUsers(response.data);
+            } else if (isCoach) {
+                response = await CoachService.notApprovedUsers();
+                setUsers(response.data);
+            }
         } catch (error) {
             console.error("Error fetching not approved users:", error);
         }
@@ -89,7 +127,7 @@ const PendingApprovalsComponent = () => {
 
     useEffect(() => {
         notApprovedUsers();
-    }, []);
+    }, [isAdmin, isManager, isCoach]);
 
     return (
         <div>
@@ -213,12 +251,22 @@ const PendingApprovalsComponent = () => {
                                         </div>
                                         <div className="col-span-6 sm:col-span-3">
                                             <label htmlFor="role" className="block mb-2 text-sm font-medium text-white">Role</label>
-                                            <select name="Role" id="role" value={selectedUser.Role || ''} onChange={handleInputChange} className="block w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white">
-                                                <option value="Admin">Admin</option>
-                                                <option value="Coach">Coach</option>
-                                                <option value="Manager">Manager</option>
-                                                <option value="Parent">Parent</option>
+                                            {isAdmin && (
+                                                <select name="Role" id="role" value={selectedUser.Role || ''} onChange={handleInputChange} className="block w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white">
+                                                    <option value="Admin">Admin</option>
+                                                    <option value="Coach">Coach</option>
+                                                    <option value="Manager">Manager</option>
+                                                    <option value="Parent">Parent</option>
+                                                </select>
+                                        )}
+                                            {!isAdmin && (
+                                                <select name="Role" disabled id="role" value={selectedUser.Role || ''} onChange={handleInputChange} className="block w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white">
+                                                    <option value="Admin">Admin</option>
+                                                    <option value="Coach">Coach</option>
+                                                    <option value="Manager">Manager</option>
+                                                    <option value="Parent">Parent</option>
                                             </select>
+                                        )}
                                         </div>
                                     </div>
                                 </div>

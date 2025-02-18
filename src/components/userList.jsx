@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { useEffect } from "react";
 import UserService from "../services/user.service";
+import ManagerService from "../services/manager.service";
+import CoachService from "../services/coach.service";
 
-const UserListComponent = () => {
+const UserListComponent = (props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState({});
   const [users, setUsers] = useState([]);
@@ -10,11 +12,27 @@ const UserListComponent = () => {
   const [roleFilter, setRoleFilter] = useState("");
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
 
+  const userRole = props.role;
+  const isAdmin = userRole === "Admin";
+  const isManager = userRole === "Manager";
+  const isCoach = userRole === "Coach";
+
   const openModal = async (id) => {
     try {
-      const response = await UserService.getUser(id);
-      setSelectedUser(response.data);
-      setIsModalOpen(true);
+      let response = "";
+      if (isAdmin) {
+        response = await UserService.getUser(id);
+        setSelectedUser(response.data);
+        setIsModalOpen(true);
+      } else if (isManager) {
+        response = await ManagerService.getUser(id);
+        setSelectedUser(response.data);
+        setIsModalOpen(true);
+      } else if (isCoach) {
+        response = await CoachService.getUser(id);
+        setSelectedUser(response.data);
+        setIsModalOpen(true);
+      }
     } catch (error) {
       console.error("Error fetching user details:", error);
     }
@@ -37,7 +55,13 @@ const UserListComponent = () => {
 
   const handleReject = async () => {
     try {
-      await UserService.rejectUser(selectedUser.UserID);
+      if (isAdmin) {
+        await UserService.rejectUser(selectedUser.UserID);
+      } else if (isManager) {
+        await ManagerService.rejectUser(selectedUser.UserID);
+      } else if (isCoach) {
+        await CoachService.rejectUser(selectedUser.UserID);
+      }
       closeRejectModal();
       allUsers();
     } catch (error) {
@@ -55,7 +79,7 @@ const UserListComponent = () => {
     try {
       await UserService.updateUser(selectedUser.UserID, selectedUser);
       setIsModalOpen(false);
-      allUsers(); // Refresh the user list after update
+      allUsers();
     } catch (error) {
       console.error("Error updating user:", error);
     }
@@ -66,7 +90,7 @@ const UserListComponent = () => {
       await UserService.updateUser(selectedUser.UserID, selectedUser);
       console.log(selectedUser);
       setIsModalOpen(false);
-      allUsers(); // Refresh the user list after update
+      allUsers();
     } catch (error) {
       console.error("Error updating user:", error);
     }
@@ -74,8 +98,17 @@ const UserListComponent = () => {
 
   const allUsers = async () => {
     try {
-      const response = await UserService.approvedUsers();
-      setUsers(response.data);
+      let response = "";
+      if (isAdmin) {
+        response = await UserService.approvedUsers();
+        setUsers(response.data);
+      } else if (isManager) {
+        response = await ManagerService.approvedUsers();
+        setUsers(response.data);
+      } else if (isCoach) {
+        response = await CoachService.approvedUsers();
+        setUsers(response.data);
+      }
     } catch (error) {
       console.error("Error fetching approved users:", error);
     }
@@ -83,7 +116,14 @@ const UserListComponent = () => {
 
   const fetchFilteredUsers = async () => {
     try {
-      const response = await UserService.searchUsers(searchQuery, roleFilter);
+      let response = "";
+      if (isAdmin) {
+        response = await UserService.searchUsers(searchQuery, roleFilter);
+      } else if (isManager) {
+        response = await ManagerService.searchUsers(searchQuery, roleFilter);
+      } else if (isCoach) {
+        response = await CoachService.searchUsers(searchQuery, roleFilter);
+      }
       console.log(response.data);
       setUsers(response.data);
     } catch (error) {
@@ -93,7 +133,7 @@ const UserListComponent = () => {
 
   useEffect(() => {
     allUsers();
-  }, []);
+  }, [isAdmin, isManager, isCoach]);
 
   useEffect(() => {
     fetchFilteredUsers();
@@ -125,7 +165,8 @@ const UserListComponent = () => {
             />
 
             {/* Role Filter */}
-            <select
+            {isAdmin && (
+              <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
               className="block w-40 p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white"
@@ -136,6 +177,19 @@ const UserListComponent = () => {
               <option value="Manager">Manager</option>
               <option value="Parent">Parent</option>
             </select>
+            )}
+            {isManager && (
+              <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="block w-40 p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white"
+            >
+              <option value="">All Roles</option>
+              <option value="Coach">Coach</option>
+              <option value="Manager">Manager</option>
+              <option value="Parent">Parent</option>
+            </select>
+            )}
           </div>
         </div>
         <table className="w-full text-sm text-left rtl:text-right text-gray-400">
@@ -150,7 +204,7 @@ const UserListComponent = () => {
               <th scope="col" className="px-6 py-3">
                 Action
               </th>
-              <th scope="col" className="py-3"></th>
+              {isAdmin && <th scope="col" className="px-6 py-3"></th>}
             </tr>
           </thead>
           <tbody>
@@ -182,7 +236,8 @@ const UserListComponent = () => {
                     Edit user
                   </a>
                 </td>
-                <td className="py-4">
+                {isAdmin && (
+                  <td className="py-4">
                   <div className="flex items-center">
                     <button
                       type="button"
@@ -193,13 +248,14 @@ const UserListComponent = () => {
                     </button>
                   </div>
                 </td>
+                )}
               </tr>
             ))}
           </tbody>
         </table>
 
         {/* Reject Modal */}
-        {isRejectModalOpen && (
+        {isAdmin && isRejectModalOpen && (
           <div
             id="reject-modal"
             tabIndex="-1"
@@ -382,7 +438,8 @@ const UserListComponent = () => {
                       >
                         Role
                       </label>
-                      <select
+                      {isAdmin && (
+                        <select
                         name="Role"
                         id="role"
                         value={selectedUser.Role || ""}
@@ -394,6 +451,21 @@ const UserListComponent = () => {
                         <option value="Manager">Manager</option>
                         <option value="Parent">Parent</option>
                       </select>
+                      )}
+                      {!isAdmin && (
+                        <select
+                        name="Role"
+                        id="role"
+                        disabled
+                        value={selectedUser.Role || ""}
+                        onChange={handleInputChange}
+                        className="block w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white"
+                      >
+                        <option value="Admin">Admin</option>
+                        <option value="Coach">Coach</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Parent">Parent</option>
+                      </select>)}
                     </div>
                   </div>
                 </div>

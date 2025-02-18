@@ -33,7 +33,7 @@ const saveChanges = async () => {
   try {
     await UserService.updateUser(selectedUser.UserID, selectedUser);
     setIsEditModalOpen(false);
-    notApprovedUsers(); // Refresh the user list after update
+    // notApprovedUsers(); // Refresh the user list after update
   } catch (error) {
     console.error("Error updating user:", error);
   }
@@ -87,19 +87,19 @@ const handleInputChange = (e) => {
     }
   };
 
-  const notApprovedUsers = async () => {
-    try {
-      const response = await UserService.notApprovedUsers();
-      console.log('Not Approved Users:', response.data[0]);
-    } catch (error) {
-      console.error("Error fetching not approved users:", error);
-    }
-  };
+  // const notApprovedUsers = async () => {
+  //   try {
+  //     const response = await UserService.notApprovedUsers();
+  //     console.log('Not Approved Users:', response.data[0]);
+  //   } catch (error) {
+  //     console.error("Error fetching not approved users:", error);
+  //   }
+  // };
 
   useEffect(() => {
 
     fetchUserDetails();
-    notApprovedUsers();
+    // notApprovedUsers();
 
     const handleOutsideClick = (event) => {
       if (

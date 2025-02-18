@@ -17,6 +17,7 @@ const ManagerDashboard = () => {
   const [selectedSection, setSelectedSection] = useState('dashboard');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [role, setRole] = useState(null);
 
   const openEditModal = async (id) => {
     try {
@@ -37,7 +38,7 @@ const saveChanges = async () => {
   try {
     await UserService.updateUser(selectedUser.UserID, selectedUser);
     setIsEditModalOpen(false);
-    notApprovedUsers(); // Refresh the user list after update
+    // notApprovedUsers(); // Refresh the user list after update
   } catch (error) {
     console.error("Error updating user:", error);
   }
@@ -74,6 +75,7 @@ const handleInputChange = (e) => {
     try {
       const response = AuthService.getCurrentUser();
       setUserDetails(response);
+      setRole(response.roles);
       console.log('User Details:', response);
       if (!response) { 
         setIsUnauthorized(true);
@@ -91,19 +93,19 @@ const handleInputChange = (e) => {
     }
   };
 
-  const notApprovedUsers = async () => {
-    try {
-      const response = await UserService.notApprovedUsers();
-      console.log('Not Approved Users:', response.data[0]);
-    } catch (error) {
-      console.error("Error fetching not approved users:", error);
-    }
-  };
+  // const notApprovedUsers = async () => {
+  //   try {
+  //     const response = await UserService.notApprovedUsers();
+  //     console.log('Not Approved Users:', response.data[0]);
+  //   } catch (error) {
+  //     console.error("Error fetching not approved users:", error);
+  //   }
+  // };
 
   useEffect(() => {
 
     fetchUserDetails();
-    notApprovedUsers();
+    // notApprovedUsers();
 
     const handleOutsideClick = (event) => {
       if (
@@ -386,10 +388,10 @@ const handleInputChange = (e) => {
             </>
           )}
           {selectedSection === 'userList' && (
-            <UserListComponent /> // Replace with actual User List component or content
+            <UserListComponent role={role} /> // Replace with actual User List component or content
           )}
           {selectedSection === 'pendingApprovals' && (
-            <PendingApprovalsComponent /> // Replace with actual Pending Approvals component or content
+            <PendingApprovalsComponent role={role} /> // Replace with actual Pending Approvals component or content
           )}
           {selectedSection === 'attendance' && (
             <Attendance />

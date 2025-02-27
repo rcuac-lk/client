@@ -6,6 +6,7 @@ import UserListComponent from "../components/userList";
 import PendingApprovalsComponent from "../components/pendingApprovals";
 import Attendance from "../components/attendance";
 import Timing from "../components/timing";
+import ManagerService from "../services/manager.service";
 
 const ManagerDashboard = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -21,7 +22,7 @@ const ManagerDashboard = () => {
 
   const openEditModal = async (id) => {
     try {
-        const response = await UserService.getUser(id);
+        const response = await ManagerService.getUser(id);
         setSelectedUser(response.data);
         setIsEditModalOpen(true);
     } catch (error) {
@@ -38,6 +39,7 @@ const saveChanges = async () => {
   try {
     await UserService.updateUser(selectedUser.UserID, selectedUser);
     setIsEditModalOpen(false);
+    fetchUserDetails();
     // notApprovedUsers(); // Refresh the user list after update
   } catch (error) {
     console.error("Error updating user:", error);

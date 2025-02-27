@@ -39,6 +39,7 @@ const saveChanges = async () => {
   try {
     await UserService.updateUser(selectedUser.UserID, selectedUser);
     setIsEditModalOpen(false);
+    fetchUserDetails();
     // notApprovedUsers(); // Refresh the user list after update
   } catch (error) {
     console.error("Error updating user:", error);
@@ -267,7 +268,7 @@ const handleInputChange = (e) => {
                 <span className="ms-3">Dashboard</span>
               </a>
             </li>
-            <li>
+            {/* <li>
               <a
                 href="#"
                 onClick={() => handleMenuClick('userList')}
@@ -285,8 +286,8 @@ const handleInputChange = (e) => {
                 </svg>
                 <span className="ms-3">User List</span>
               </a>
-            </li>
-            <li>
+            </li> */}
+            {/* <li>
               <a
                 href="#"
                 onClick={() => handleMenuClick('pendingApprovals')}
@@ -304,7 +305,7 @@ const handleInputChange = (e) => {
                 </svg>
                 <span className="ms-3">Pending Approvals</span>
               </a>
-            </li>
+            </li> */}
             <li>
               <a
                 href="#"

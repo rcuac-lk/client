@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import AuthService from "../services/auth.service";
 import UserService from "../services/user.service";
+import ParentService from "../services/parent.service";
 
 const ParentDashboard = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -16,7 +17,7 @@ const ParentDashboard = () => {
 
   const openEditModal = async (id) => {
     try {
-        const response = await UserService.getUser(id);
+        const response = await ParentService.getUser(id);
         setSelectedUser(response.data);
         setIsEditModalOpen(true);
     } catch (error) {

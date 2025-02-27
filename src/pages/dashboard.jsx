@@ -38,6 +38,7 @@ const saveChanges = async () => {
   try {
     await UserService.updateUser(selectedUser.UserID, selectedUser);
     setIsEditModalOpen(false);
+    fetchUserDetails();
     // notApprovedUsers(); // Refresh the user list after update
   } catch (error) {
     console.error("Error updating user:", error);

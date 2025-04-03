@@ -2,10 +2,7 @@ import axios from "axios";
 import TokenService from "./token.service";
 
 const instance = axios.create({
-  // baseURL: process.env.BASE_URL,
-  // baseURL: "https://api.rcuac.lk/api/",
-  baseURL: "https://server.rcuac.lk/api/",
-  // baseURL: "http://localhost:8080/api/",
+  baseURL: process.env.REACT_APP_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },

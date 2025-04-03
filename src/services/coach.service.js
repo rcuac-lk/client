@@ -2,10 +2,7 @@
 import api from "./api";
 import authHeader from "./auth-header";
 
-// const API_URL = process.env.BASE_URL;
-// const API_URL = "https://api.rcuac.lk/api/";
-const API_URL = "https://server.rcuac.lk/api/";
-// const API_URL = "http://localhost:8080/api/";
+const API_URL = process.env.REACT_APP_BASE_URL;
 
 const approvedUsers = () => {
   return api.get(API_URL + "coach/approved", { headers: authHeader() });

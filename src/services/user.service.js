@@ -2,26 +2,7 @@
 import api from "./api";
 import authHeader from "./auth-header";
 
-// const API_URL = process.env.BASE_URL;
-// const API_URL = "https://api.rcuac.lk/api/";
-const API_URL = "https://server.rcuac.lk/api/";
-// const API_URL = "http://localhost:8080/api/";
-
-// const getPublicContent = () => {
-//   return axios.get(API_URL + "all");
-// };
-
-// const getUserBoard = () => {
-//   return axios.get(API_URL + "user", { headers: authHeader() });
-// };
-
-// const getModeratorBoard = () => {
-//   return axios.get(API_URL + "mod", { headers: authHeader() });
-// };
-
-// const getAdminBoard = () => {
-//   return axios.get(API_URL + "admin", { headers: authHeader() });
-// };
+const API_URL = process.env.REACT_APP_BASE_URL;
 
 const notApprovedUsers = () => {
   return api.get(API_URL + "users/notApproved", { headers: authHeader() });

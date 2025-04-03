@@ -4,13 +4,21 @@ import UserService from "../services/user.service";
 
 const UserListComponent = () => {
   /** varianbles*/
-  const [selectedUser, setSelectedUser] = useState({});
+  const [selectedUser, setSelectedUser] = useState({}); // To store the selected user's data
   const [students, setStudents] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [ageFilter, setAgeFilter] = useState("");
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
   const [isPresent, setIsPresent] = useState(null);
   const [ageCategories, setAgeCategories] = useState([]);
+  const [sessionFilter, setSessionFilter] = useState("");
+  const [customSession, setCustomSession] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [sessionSuggestions, setSessionSuggestions] = useState([]);
+  const [sessions, setSessions] = useState([]);
+  const [customDate, setCustomDate] = useState("");
+  const [showNewSessionDialog, setShowNewSessionDialog] = useState(false);
+  const [newSessionName, setNewSessionName] = useState("");
 
   /** functions */
   const getAgeGroups = () => {
@@ -31,7 +39,45 @@ const UserListComponent = () => {
       return response;
   }
 
-  const getStudentsData = () => { 
+  const getSessionData = () => { 
+    /**This will get the event data from the back end */
+    const dateObject = new Date()
+    /** get the current date to a string in YYYY-MM-DD format */
+    const today = dateObject.toISOString().split('T')[0];
+    const response = {
+      /** dummy data. Get this from backend. */    
+        "data": [
+            {
+              "SessionID": 1000,
+              "SessionName": "Morning Practice Session",
+              "SessionDate": today,
+              "SessionTime": "7:00 AM",
+              "SessionLocation": "Collage Pool",
+              "SessionDescription": "Standard Practice Session",
+            }, 
+            {
+              "SessionID": 1001,
+              "SessionName": "Evening Practice Session",
+              "SessionDate": today,
+              "SessionTime": "05:00 PM",
+              "SessionLocation": "Collage Pool",
+              "SessionDescription": "Standard Practice Session",
+            }, 
+            {
+              "SessionID": 1002,
+              "SessionName": "Natianal Championship",
+              "SessionDate": "2025-01-12",
+              "SessionTime": "12:00 PM",
+              "SessionLocation": "Sugathadasa Stadium",
+              "SessionDescription": "Main National Championship",
+            }
+        ],
+        "request": {}
+      };
+      return response;
+  }
+
+  const getStudentsData = (date,session) => { 
     /** the responce data should be fetched from the backend
      * The LastUpdate field is used to determine if the student attendance is already set or not for the current date.
      * if LastUpdate === "", then the student attendance is not set for the current date.
@@ -52,9 +98,9 @@ const UserListComponent = () => {
             {
               "UserID": 1001,
               "AdmisionNumber": "2365/5744",
-              "LastUpdate": "Present",
+              "LastUpdate": "Absent",
               "LastUpdateBy": "Doltan Palanda",
-              "LastUpdateAt": "10:10 AM",
+              "LastUpdateAt": "06:10 AM",
               "AgeCategory": "Under 13",
               "FirstName": "Nancy",
               "LastName": "Sicari",
@@ -64,7 +110,7 @@ const UserListComponent = () => {
               "AdmisionNumber": "2365/5744",
               "LastUpdate": "Absent",
               "LastUpdateBy": "Doltan Palanda",
-              "LastUpdateAt": "09:55 AM",
+              "LastUpdateAt": "06:55 AM",
               "AgeCategory": "Under 17",
               "FirstName": "Jim",
               "LastName": "Pappa",
@@ -73,8 +119,8 @@ const UserListComponent = () => {
               "UserID": 1003,
               "AdmisionNumber": "2365/5744",
               "LastUpdateBy": "Doltan Palanda",
-              "LastUpdateAt": "10:09 AM",
-              "LastUpdate": "Present",
+              "LastUpdateAt": "06:09 AM",
+              "LastUpdate": "Absent",
               "AgeCategory": "Under 11",
               "FirstName": "Vital",
               "LastName": "Statistix",
@@ -82,12 +128,54 @@ const UserListComponent = () => {
         ],
         "request": {}
       };
+      console.log("[UE7000] StudentData: Date ["+  date + "] Session [" + session + "]");
+      if (session === "Morning Practice Session") {
+        response.data[1].LastUpdate = "Absent";
+        response.data[1].LastUpdateBy = "Doltan Palanda";
+        response.data[1].LastUpdateAt = "09:55 AM";
+        response.data[2].LastUpdate = "Present";
+        response.data[2].LastUpdateBy = "Doltan Palanda";
+        response.data[2].LastUpdateAt = "10:05 AM";
+        response.data[3].LastUpdate = "Absent";
+        response.data[3].LastUpdateBy = "Doltan Palanda";
+        response.data[3].LastUpdateAt = "10:10 AM";
+      }
+      else if (session === "Evening Practice Session") {
+        response.data[1].LastUpdate = "Present";
+        response.data[1].LastUpdateBy = "Doltan Palanda";
+        response.data[1].LastUpdateAt = "05:05 PM";
+        response.data[2].LastUpdate = "Absent";
+        response.data[2].LastUpdateBy = "Doltan Palanda";
+        response.data[2].LastUpdateAt = "05:10 PM";
+        response.data[3].LastUpdate = "Absent";
+        response.data[3].LastUpdateBy = "Doltan Palanda";
+        response.data[3].LastUpdateAt = "05:15 PM";
+      }
+      else if (session === "Natianal Championship") {
+        response.data[1].LastUpdate = "Present";
+        response.data[1].LastUpdateBy = "Doltan Palanda";
+        response.data[1].LastUpdateAt = "12:05 PM";
+        response.data[2].LastUpdate = "Present";
+        response.data[2].LastUpdateBy = "Doltan Palanda";
+        response.data[2].LastUpdateAt = "12:10 PM";
+        response.data[3].LastUpdate = "Present";
+        response.data[3].LastUpdateBy = "Doltan Palanda";
+        response.data[3].LastUpdateAt = "12:15 PM";
+      }
+      if(date == "2025-03-01") {
+        response.data[0].LastUpdate = "Present";
+        response.data[0].LastUpdateBy = "Doltan Palanda";
+        response.data[0].LastUpdateAt = "19:00 PM";
+        response.data[1].LastUpdateAt = "09:05 PM";
+        response.data[2].LastUpdateAt = "09:10 PM";
+        response.data[3].LastUpdateAt = "09:15 PM";
+      }
       return response;
     }
 
-  const getStudentsFiltered = () => {
+  const getStudentsFiltered = (date,session) => {
     /** Filter the student data using the user selection. We will use searchQuery and ageFilter*/
-    const response = getStudentsData();
+    const response = getStudentsData(date,session);
       const filteredData = response.data.filter(student => {
         const matchesSearchQuery = searchQuery === "" || 
         student.FirstName.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -103,12 +191,12 @@ const UserListComponent = () => {
      * Change dialog box if the student is not already marked as present or absent.
      * The LastUpdate variable halds the status if the student was atleast marked once today*/
     if(student.LastUpdate === "") {
-        console.log("Set Attendance of", student.LastName,"to", isPresent);
+        console.log("[UE7001] Set Attendance of ["+ student.LastName + "] to [" + isPresent + "] on [" + customDate + "] for [" + customSession + "]");
         /** call backend function setAttendance(student.UserID, isPresent); */
         fetchFilteredStudents(); //load all student data.
     }
     else if(student.LastUpdate === isPresent) {
-        console.log("Attendance already set to",isPresent, " for", student.LastName);
+        console.log("[UE7002]Attendance already set to [" + isPresent, "] for [" + student.LastName + "] on [" + customDate + "] for [" + customSession + "]");
         fetchFilteredStudents(); //load all student data.
     }
     else {
@@ -126,39 +214,103 @@ const UserListComponent = () => {
   };
 
   const handleChange = async () => {
-    console.log("handleChange", selectedUser.FirstName, selectedUser.LastName, "set to Present = ", isPresent);
+    console.log("[UE7003] handleChange [" + selectedUser.FirstName + " " + selectedUser.LastName, "] set to Present [" + isPresent + "] on [" + customDate + "] for [" + customSession + "]");
     try {
         /**call backend function setAttendance(selectedUser.UserID, isPresent); */
       closeChangeModal();
       fetchFilteredStudents();
     } catch (error) {
-      console.error("Error Change Attendande:", error);
+      console.error("[UE7004] Error Change Attendande :", error);
     }
   };
 
   const fetchFilteredStudents = async () => {
-    console.log("fetchFilteredStudents");
+    console.log("[AT7005] call fetchFilteredStudents ()");
     try {
       /** const response = await UserService.searchUsers(searchQuery, ageFilter); */
-      const response = getStudentsFiltered();
-      console.log(response.data);
+      const response = getStudentsFiltered(customDate,customSession);
+      //console.log(response.data);
       setStudents(response.data);
     } catch (error) {
-      console.error("Error fetching filtered Students:", error);
+      console.error("[AT7006] Error fetching filtered Students :", error);
     }
   };
 
   /** load the student data */
   useEffect(() => {
     fetchFilteredStudents();
-  }, [searchQuery, ageFilter]);
+  }, [searchQuery, ageFilter, customDate, customSession]);
 
   /** load the age categories */
   useEffect(() => {
     const response = getAgeGroups();
     setAgeCategories(response.data);
-    console.log("Use Age Categories", response.data);
+    //console.log("[AT7007] Use Age Categories \n", response.data);
+    const sessions = getSessionData(); //get the session data
+    setSessions(sessions.data); //set the session data to sessions variable
+    // Set initial session filter and custom session to the first session's name
+    if (sessions.data && sessions.data.length > 0) {
+      setSessionFilter(sessions.data[0].SessionName);
+      setCustomSession(sessions.data[0].SessionName);
+      setCustomDate(sessions.data[0].SessionDate);
+    }
   }, []);
+
+  // Update customSession when sessionFilter changes
+  useEffect(() => {
+    setCustomSession(sessionFilter);
+    console.log("[AT7008] Session Filter [" + sessionFilter + '][' + customSession + ']');
+  }, [sessionFilter]);
+
+  const createNewSession = (sessionName, date) => {
+    console.log("[AT7009] Creating new session:", sessionName, "for date:", date);
+    // TODO: Call backend API to create new session
+    // After successful creation, refresh the sessions list
+    const newSession = {
+      SessionID: Date.now(), // Temporary ID for demo
+      SessionName: sessionName,
+      SessionDate: date,
+      SessionTime: "12:00 PM", // Default time
+      SessionLocation: "TBD",
+      SessionDescription: "New Session"
+    };
+    setSessions([...sessions, newSession]);
+    setCustomSession(sessionName);
+    setSessionFilter(sessionName);
+    setShowNewSessionDialog(false);
+  };
+
+  const handleNewSessionConfirm = () => {
+    createNewSession(newSessionName, customDate);
+  };
+
+  const handleNewSessionCancel = () => {
+    setShowNewSessionDialog(false);
+    setCustomSession(sessionFilter); // Reset to previously selected session
+  };
+
+  /** Add this new function near the other modal-related functions */
+  const handleEscapeKey = (event) => {
+    if (event.key === 'Escape') {
+      handleNewSessionCancel();
+    }
+  };
+
+  useEffect(() => {
+    if (showNewSessionDialog) {
+      // Add event listener for escape key
+      document.addEventListener('keydown', handleEscapeKey);
+      // Prevent background scrolling
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showNewSessionDialog]);
 
   return (
     <div>
@@ -170,15 +322,14 @@ const UserListComponent = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="Search by name"
             />
-
             {/* Role Filter */}
             <select
               value={ageFilter}
               onChange={(e) => setAgeFilter(e.target.value)}
-              className="block w-40 p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white"
+              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               {ageCategories.map((category) => (
                 <option key={category.value} value={category.value}>
@@ -186,6 +337,76 @@ const UserListComponent = () => {
                 </option>
               ))}
             </select>
+          </div>
+          <div className="flex space-x-2 px-2 py-4">
+            {/* Custom Session */}
+            <div className="relative">
+              <input
+                type="text"
+                value={customSession}
+                onChange={(e) => {
+                  const newValue = e.target.value;
+                  setCustomSession(newValue);
+                  // Filter sessions based on input
+                  const filteredSessions = sessions.filter(session =>
+                    session.SessionName.toLowerCase().includes(newValue.toLowerCase())
+                  );
+                  setSessionSuggestions(filteredSessions);
+                  setShowSuggestions(filteredSessions.length > 0 && newValue !== "");
+                }}
+                onBlur={(e) => {
+                  // Immediately hide suggestions
+                  setShowSuggestions(false);
+                  
+                  // Check if entered session exists
+                  const sessionExists = sessions.some(
+                    session => session.SessionName.toLowerCase() === e.target.value.toLowerCase()
+                  );
+                  
+                  // Only show dialog if there's a value and it doesn't exist
+                  if (!sessionExists && e.target.value.trim() !== "") {
+                    setNewSessionName(e.target.value);
+                    setShowNewSessionDialog(true);
+                  }
+                }}
+                className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder={sessionFilter}
+              />
+              {showSuggestions && (
+                <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-60 overflow-auto dark:bg-gray-700 dark:border-gray-600">
+                  {sessionSuggestions.map((session) => (
+                    <div
+                      key={session.SessionID}
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-white"
+                      onClick={() => {
+                        setCustomSession(session.SessionName);
+                        setShowSuggestions(false);
+                      }}
+                    >
+                      {session.SessionName}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            {/* Session Filter */}
+            <select
+              value={sessionFilter}
+              onChange={(e) => setSessionFilter(e.target.value)}
+              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            >
+              {sessions.map((session) => (
+                <option key={session.SessionID} value={session.SessionName}>
+                  {session.SessionName}
+                </option>
+              ))}
+            </select>
+            {/* Session date */}
+            <input 
+              type="date" 
+              value={customDate}
+              onChange={(e) => setCustomDate(e.target.value)}
+              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
           </div>
         </div>
         <table className="w-full text-sm text-left rtl:text-right text-gray-400">
@@ -295,6 +516,95 @@ const UserListComponent = () => {
                   >
                     No, cancel
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* New Session Confirmation Modal */}
+        {showNewSessionDialog && (
+          <div
+            className="fixed inset-0 z-50 overflow-y-auto"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-title"
+          >
+            {/* Modal backdrop */}
+            <div 
+              className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+              onClick={handleNewSessionCancel}
+            ></div>
+
+            <div className="flex min-h-full items-center justify-center p-4">
+              <div 
+                className="relative w-full max-w-md transform overflow-hidden rounded-lg bg-white dark:bg-gray-700 text-left shadow-xl transition-all"
+                role="alertdialog"
+                aria-describedby="modal-description"
+              >
+                {/* Close button */}
+                <button
+                  type="button"
+                  onClick={handleNewSessionCancel}
+                  className="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                  aria-label="Close modal"
+                >
+                  <svg
+                    className="w-3 h-3"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 14 14"
+                  >
+                    <path
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                    />
+                  </svg>
+                </button>
+
+                <div className="p-4 md:p-5 text-center">
+                  <svg
+                    className="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 20 20"
+                    aria-hidden="true"
+                  >
+                    <path
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                  </svg>
+                  <h3 
+                    id="modal-title"
+                    className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400"
+                  >
+                    Would you like to create a new session "<strong>{newSessionName}</strong>" for <strong>{customDate}</strong>?
+                  </h3>
+                  <div className="mt-4 flex justify-center space-x-4">
+                    <button
+                      type="button"
+                      onClick={handleNewSessionConfirm}
+                      className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center me-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                      autoFocus
+                    >
+                      Yes, Create Session
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleNewSessionCancel}
+                      className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
+                    >
+                      No, Cancel
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

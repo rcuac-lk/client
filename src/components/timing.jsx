@@ -13,8 +13,8 @@ const UserListComponent = () => {
   const [eventFilter, setEventFilter] = useState("");
   const [lengthFilter, setLenthFilter] = useState("");
   const [sessionFilter, setSessionFilter] = useState("");
-  const [customSession, setCustonSession] = useState(sessionFilter.SessionName);
-  const [customDate, setCustomDate] = useState(sessionFilter.SessionDate);
+  const [customSession, setCustomSession] = useState("");
+  const [customDate, setCustomDate] = useState("");
   const [studentTime, setStudentTime] = useState(0.00);
   /** modals */
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
@@ -248,8 +248,18 @@ const UserListComponent = () => {
     setEventLengths(eventLengths.data);
     const sessions = getSessionData();
     setSessions(sessions.data);
+    // Set initial session filter and custom session to the first session's name
+    if (sessions.data && sessions.data.length > 0) {
+      setSessionFilter(sessions.data[0].SessionName);
+      setCustomSession(sessions.data[0].SessionName);
+      setCustomDate(sessions.data[0].SessionDate);
+    }
   }, []);
 
+  // Update customSession when sessionFilter changes
+  useEffect(() => {
+    setCustomSession(sessionFilter);
+  }, [sessionFilter]);
 
   return (
     <div>
@@ -258,18 +268,20 @@ const UserListComponent = () => {
           <div className="flex space-x-2 px-2">
             {/* Search Input */}
             <input
+              id="student-name-search"
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="Search by name"
             />
 
             {/* Age Filter */}
             <select
+              id="age-filter"
               value={ageFilter}
               onChange={(e) => setAgeFilter(e.target.value)}
-              className="block w-30 p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white"
+              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-30 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               {ageCategories.map((category) => (
                 <option key={category.value} value={category.value}>
@@ -281,17 +293,19 @@ const UserListComponent = () => {
           <div className="flex space-x-2 px-2 py-4">
             {/* Custom Session */}
             <input
+              id="custom-session"
               type="text"
-              value={sessionFilter.SessionName}
-              onChange={(e) => setCustonSession(e.target.value)}
-              className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              value={customSession}
+              onChange={(e) => setCustomSession(e.target.value)}
+              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="Session Name"
             />
             {/* Session Filter */}
             <select
+              id="session-filter"
               value={sessionFilter}
               onChange={(e) => setSessionFilter(e.target.value)}
-              className="block w-60 p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white"
+              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-60 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               {sessions.map((session) => (
                 <option key={session.SessionName} value={session.SessionName}>
@@ -301,16 +315,18 @@ const UserListComponent = () => {
             </select>
             {/* Session date */}
             <input 
+              id="session-date"
               type="date" 
               value={customDate}
               onChange={(e) => setCustomDate(e.target.value)}
-              className="block w-40 p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white" />
+              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-40 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
 
-            {/* event Filter */}
+            {/* Event Filter */}
             <select
+              id="event-filter"
               value={eventFilter}
               onChange={(e) => setEventFilter(e.target.value)}
-              className="block w-40 p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white"
+              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-40 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               {eventTypes.map((event) => (
                 <option key={event.EventType} value={event.EventType}>
@@ -320,9 +336,10 @@ const UserListComponent = () => {
             </select>
             {/* Length Filter */}
             <select
+              id="length-filter"
               value={lengthFilter}
               onChange={(e) => setLenthFilter(e.target.value)}
-              className="block w-30 p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white"
+              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-30 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               {eventLengths.map((length) => (
                 <option key={length.EventLength} value={length.EventLength}>
@@ -337,8 +354,7 @@ const UserListComponent = () => {
             <tr>
               <th scope="col" className="px-6 py-3">Name</th>
               <th scope="col" className="px-6 py-3">Age Group</th>
-              <th scope="col" className="py-3">Timing</th>
-              <th scope="col" className="px-6 py-3">Record</th>
+              <th scope="col" className="px-6 py-3">Timing</th>
             </tr>
           </thead>
           <tbody>
@@ -355,20 +371,17 @@ const UserListComponent = () => {
                   </div>
                 </th>
                 <td className="px-6 py-4">{student.AgeCategory}</td>
-                <td className="px-2 py-2 flex">
-                  <div className="flex items-center">
-                  <input
-                    type="text"
-                    value = {studentTime}
-                    onChange={(e) => setStudentTime(e.target.value)}
-                    className="block pt-2 ps-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-20 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    placeholder={student.bestTiming}
-                  />
-                  </div>
-                </td>
                 <td className="px-6 py-4">
-                  <div className="flex items-center">
-                      <button type="button" onClick={() => recordStudentTime(student,studentTime)} className="text-white bg-green-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-1.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"> Record </button>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      id={`student-time-${student.UserID}`}
+                      type="text"
+                      value={studentTime}
+                      onChange={(e) => setStudentTime(e.target.value)}
+                      className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-28 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      placeholder={student.bestTiming}
+                    />
+                    <button type="button" id={`record-time-${student.UserID}`} onClick={() => recordStudentTime(student, studentTime)} className="text-white bg-green-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-1.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 h-10"> Record </button>
                   </div>
                 </td>
               </tr>

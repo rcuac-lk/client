@@ -21,60 +21,21 @@ const UserListComponent = () => {
   const [newSessionName, setNewSessionName] = useState("");
 
   /** functions */
-  const getAgeGroups = () => {
-    /** The AgeCategory field is used to filter the students based on their age.
-     * This function will get the acceptable age category groups from the backend. */
-    const response = {
-      /** dummy data. Get this from backend. */
-        "data": [
-          {name : "All Ages", value: ""},
-          {name : "Under 11", value: "Under 11"},
-          {name : "Under 13", value: "Under 13"},
-          {name : "Under 15", value: "Under 15"},
-          {name : "Under 17", value: "Under 17"},
-          {name : "Under 19", value: "Under 19"},
-        ],
-        "request": {}
-      };
-      return response;
+  const getAgeGroups = async() => {
+    const response = await UserService.ageGroups();
+    setAgeCategories(response.data);
   }
 
-  const getSessionData = () => { 
-    /**This will get the event data from the back end */
-    const dateObject = new Date()
-    /** get the current date to a string in YYYY-MM-DD format */
-    const today = dateObject.toISOString().split('T')[0];
-    const response = {
-      /** dummy data. Get this from backend. */    
-        "data": [
-            {
-              "SessionID": 1000,
-              "SessionName": "Morning Practice Session",
-              "SessionDate": today,
-              "SessionTime": "7:00 AM",
-              "SessionLocation": "Collage Pool",
-              "SessionDescription": "Standard Practice Session",
-            }, 
-            {
-              "SessionID": 1001,
-              "SessionName": "Evening Practice Session",
-              "SessionDate": today,
-              "SessionTime": "05:00 PM",
-              "SessionLocation": "Collage Pool",
-              "SessionDescription": "Standard Practice Session",
-            }, 
-            {
-              "SessionID": 1002,
-              "SessionName": "Natianal Championship",
-              "SessionDate": "2025-01-12",
-              "SessionTime": "12:00 PM",
-              "SessionLocation": "Sugathadasa Stadium",
-              "SessionDescription": "Main National Championship",
-            }
-        ],
-        "request": {}
-      };
-      return response;
+  const getSessionData = async() => { 
+    const response = await UserService.getSessionData();
+    console.log("Session Data", response.data);
+    setSessions(response.data.sessions);
+  
+    if (response.data && response.data.length > 0) {
+      setSessionFilter(response.data[0].SessionName);
+      setCustomSession(response.data[0].SessionName);
+      setCustomDate(response.data[0].SessionDate);
+    }
   }
 
   const getStudentsData = (date,session) => { 
@@ -243,17 +204,16 @@ const UserListComponent = () => {
 
   /** load the age categories */
   useEffect(() => {
-    const response = getAgeGroups();
-    setAgeCategories(response.data);
-    //console.log("[AT7007] Use Age Categories \n", response.data);
-    const sessions = getSessionData(); //get the session data
-    setSessions(sessions.data); //set the session data to sessions variable
-    // Set initial session filter and custom session to the first session's name
-    if (sessions.data && sessions.data.length > 0) {
-      setSessionFilter(sessions.data[0].SessionName);
-      setCustomSession(sessions.data[0].SessionName);
-      setCustomDate(sessions.data[0].SessionDate);
-    }
+    const fetchStaticData = async () => {
+      try {
+        await getAgeGroups();
+        await getSessionData();
+      } catch (error) {
+        console.error("Error loading static data:", error);
+      }
+    };
+  
+    fetchStaticData();
   }, []);
 
   // Update customSession when sessionFilter changes

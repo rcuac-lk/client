@@ -4,9 +4,7 @@ import UserService from "../services/user.service";
 
 const UserListComponent = () => {
   /** varianbles*/
-  const [selectedUser, setSelectedUser] = useState({});
   const [students, setStudents] = useState([]);
-  const [isPresent, setIsPresent] = useState(null);
   /** filters */
   const [searchQuery, setSearchQuery] = useState("");
   const [ageFilter, setAgeFilter] = useState("");
@@ -16,8 +14,6 @@ const UserListComponent = () => {
   const [customSession, setCustomSession] = useState("");
   const [customDate, setCustomDate] = useState("");
   const [studentTime, setStudentTime] = useState(0.00);
-  /** modals */
-  const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
   /** static data */
   const [ageCategories, setAgeCategories] = useState([]);
   const [eventTypes, setEventTypes] = useState([]);
@@ -25,122 +21,31 @@ const UserListComponent = () => {
   const [sessions, setSessions] = useState([]);
 
   /** functions */
-  const getAgeGroups = () => {
-    /** The AgeCategory field is used to filter the students based on their age.
-     * This function will get the acceptable age category groups from the backend. */
-    const response = {
-      /** dummy data. Get this from backend. */
-        "data": [
-          {name : "All Ages", value: ""},
-          {name : "Under 11", value: "Under 11"},
-          {name : "Under 13", value: "Under 13"},
-          {name : "Under 15", value: "Under 15"},
-          {name : "Under 17", value: "Under 17"},
-          {name : "Under 19", value: "Under 19"},
-        ],
-        "request": {}
-      };
-      return response;
+  const getAgeGroups = async() => {
+    const response = await UserService.ageGroups();
+    setAgeCategories(response.data);
   }
 
-  const getSessionData = () => { 
-    /**This will get the event data from the back end */
-    const dateObject = new Date()
-    /** get the current date to a string in YYYY-MM-DD format */
-    const today = dateObject.toISOString().split('T')[0];
-    const response = {
-      /** dummy data. Get this from backend. */    
-        "data": [
-            {
-              "SessionID": 1000,
-              "SessionName": "Morning Practice Session",
-              "SessionDate": today,
-              "SessionTime": "7:00 AM",
-              "SessionLocation": "Collage Pool",
-              "SessionDescription": "Standard Practice Session",
-            }, 
-            {
-              "SessionID": 1001,
-              "SessionName": "Evening Practice Session",
-              "SessionDate": today,
-              "SessionTime": "05:00 PM",
-              "SessionLocation": "Collage Pool",
-              "SessionDescription": "Standard Practice Session",
-            }, 
-            {
-              "SessionID": 1002,
-              "SessionName": "Natianal Championship",
-              "SessionDate": "2025-01-12",
-              "SessionTime": "12:00 PM",
-              "SessionLocation": "Sugathadasa Stadium",
-              "SessionDescription": "Main National Championship",
-            }
-        ],
-        "request": {}
-      };
-      return response;
+  const getSessionData = async() => { 
+    const response = await UserService.getSessionData();
+    setSessions(response.data.sessions);
+  
+    if (response.data && response.data.length > 0) {
+      setSessionFilter(response.data[0].SessionName);
+      setCustomSession(response.data[0].SessionName);
+      setCustomDate(response.data[0].SessionDate);
+    }
   }
 
-  const getEventTypes = () => { 
-    /**This will get the event data from the back end */
-    const response = {
-      /** dummy data. Get this from backend. */    
-        "data": [
-            {
-              "EventTypeID": 1000,
-              "EventType": "Free Style",
-              "EventTypeDescription": "Free Style Swimming",
-            }, 
-            {
-              "EventTypeID": 1001,
-              "EventType": "Back Stroke",
-              "EventTypeDescription": "Back Stroke Swimming",
-            }, 
-            {
-              "EventTypeID": 1002,
-              "EventType": "Breast Stroke",
-              "EventTypeDescription": "Breast Stroke Swimming",
-            },
-            {
-              "EventTypeID": 1003,
-              "EventType": "Butterfly",
-              "EventTypeDescription": "Butterfly Swimming",
-            }
-        ],
-        "request": {}
-      };
-      return response;
+  const getEventTypes = async() => { 
+    const response = await UserService.getEventTypes();
+    setEventTypes(response.data.eventTypes);
   }
 
-  const getEventLengths = () => {
-    /**This will get the event data from the back end */
-    const response = {
-      /** dummy data. Get this from backend. */    
-        "data": [
-            {
-              "EventLengthID": 1000,
-              "EventLength": "50m",
-              "EventLengthDescription": "50 meter event",
-            }, 
-            {
-              "EventLengthID": 1001,
-              "EventLength": "100m",
-              "EventLengthDescription": "100 meter event",
-            }, 
-            {
-              "EventLengthID": 1002,
-              "EventLength": "200m",
-              "EventLengthDescription": "200 meter event",
-            },
-            {
-              "EventLengthID": 1003,
-              "EventLength": "400m",
-              "EventLengthDescription": "400 meter event",
-            }
-        ],
-        "request": {}
-    };
-    return response;
+  const getEventLengths = async() => {
+    const response = await UserService.getEventLengths();
+    console.log(response.data.eventLengths);
+    setEventLengths(response.data.eventLengths);
   }
 
 
@@ -240,20 +145,18 @@ const UserListComponent = () => {
 
   /** load the static data */
   useEffect(() => {
-    const ageCategories = getAgeGroups();
-    setAgeCategories(ageCategories.data);
-    const eventTypes = getEventTypes();
-    setEventTypes(eventTypes.data);
-    const eventLengths = getEventLengths();
-    setEventLengths(eventLengths.data);
-    const sessions = getSessionData();
-    setSessions(sessions.data);
-    // Set initial session filter and custom session to the first session's name
-    if (sessions.data && sessions.data.length > 0) {
-      setSessionFilter(sessions.data[0].SessionName);
-      setCustomSession(sessions.data[0].SessionName);
-      setCustomDate(sessions.data[0].SessionDate);
-    }
+    const fetchStaticData = async () => {
+      try {
+        await getAgeGroups();
+        await getEventTypes();
+        await getEventLengths();
+        await getSessionData();
+      } catch (error) {
+        console.error("Error loading static data:", error);
+      }
+    };
+  
+    fetchStaticData();
   }, []);
 
   // Update customSession when sessionFilter changes

@@ -39,6 +39,22 @@ const searchUsers = (search, role) => {
     return api.get(API_URL + "users/search",  { params, headers: authHeader() });
 }
 
+const ageGroups = () => {
+  return api.get(API_URL + "users/ageGroups", { headers: authHeader() });
+}
+
+const getSessionData = () => {
+  return api.get(API_URL + "users/getSessionData", { headers: authHeader() });
+}
+
+const getEventTypes = () => {
+  return api.get(API_URL + "users/getEventTypes", { headers: authHeader() });
+}
+
+const getEventLengths = () => {
+  return api.get(API_URL + "users/getEventLengths", { headers: authHeader() });
+}
+
 const UserService = {
   notApprovedUsers,
   getAllUsers,
@@ -47,7 +63,11 @@ const UserService = {
   approvedUsers,
   updateUser,
   searchUsers,
-  rejectUser
+  rejectUser,
+  ageGroups,
+  getSessionData,
+  getEventTypes,
+  getEventLengths,
 };
 
 export default UserService;

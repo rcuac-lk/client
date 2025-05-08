@@ -35,26 +35,22 @@ const UserListComponent = () => {
 
   const getSessionData = async() => { 
     const response = await UserService.getSessionData();
-    console.log("Session Data", response.data);
     setSessions(response.data.sessions);
-  
-    if (response.data && response.data.length > 0) {
-      setSessionFilter(response.data[0].SessionName);
-      setCustomSession(response.data[0].SessionName);
-      setCustomDate(response.data[0].SessionDate);
+    if (response.data && response.data.sessions.length > 0) {
+      setSessionFilter(response.data.sessions[0].SessionID);
+      setCustomSession(response.data.sessions[0].SessionName);
     }
   }
 
-  const getStudentsData = async (date) => {
-    const response = await UserService.getAttendancedata(date);
+  const getStudentsData = async (date, sessionId) => {
+    const response = await UserService.getAttendancedata(date, sessionId);
     setStudents(response.data.attendanceData);
-    console.log(response.data)
     return response;
   };
 
-  const getStudentsFiltered = (date,session) => {
+  const getStudentsFiltered = (date, sessionId) => {
     /** Filter the student data using the user selection. We will use searchQuery and ageFilter*/
-    const response = getStudentsData(date,session);
+    const response = getStudentsData(date, sessionId);
       const filteredData = response.data.filter(student => {
         const matchesSearchQuery = searchQuery === "" || 
         student.FirstName.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -65,7 +61,7 @@ const UserListComponent = () => {
       return { ...response, data: filteredData };
   }
 
-  const openChangeModal = (student,isPresent) => {
+  const openChangeModal = (student, isPresent) => {
     /** Check the change request, (which button was pressed) and open the Attandance 
      * Change dialog box if the student is not already marked as present or absent.
      * The LastUpdate variable halds the status if the student was atleast marked once today*/
@@ -75,10 +71,11 @@ const UserListComponent = () => {
         memberId: student.UserID,
         date: customDate,
         present: isPresent,
-        markedBy: response.id
+        markedBy: response.id,
+        sessionId: sessionFilter
       };
       UserService.markAttendance(data);
-      getStudentsData();
+      getStudentsData(customDate, sessionFilter);
     }
     else if(student.LastUpdate === isPresent) {
         console.log("[UE7002]Attendance already set to [" + isPresent, "] for [" + student.LastName + "] on [" + customDate + "] for [" + customSession + "]");
@@ -113,7 +110,7 @@ const UserListComponent = () => {
     console.log("[AT7005] call fetchFilteredStudents ()");
     try {
       /** const response = await UserService.searchUsers(searchQuery, ageFilter); */
-      const response = getStudentsFiltered(customDate,customSession);
+      const response = getStudentsFiltered(customDate, sessionFilter);
       //console.log(response.data);
       setStudents(response.data);
     } catch (error) {
@@ -124,7 +121,7 @@ const UserListComponent = () => {
   /** load the student data */
   useEffect(() => {
     fetchFilteredStudents();
-  }, [searchQuery, ageFilter, customDate, customSession]);
+  }, [searchQuery, ageFilter, customDate, sessionFilter]);
 
   /** load the age categories */
   useEffect(() => {
@@ -142,9 +139,10 @@ const UserListComponent = () => {
 
   // Update customSession when sessionFilter changes
   useEffect(() => {
-    setCustomSession(sessionFilter);
-    console.log("[AT7008] Session Filter [" + sessionFilter + '][' + customSession + ']');
-  }, [sessionFilter]);
+    const selected = sessions.find(s => String(s.SessionID) === String(sessionFilter));
+    setCustomSession(selected ? selected.SessionName : "");
+    console.log("[AT7008] Session Filter [" + sessionFilter + '][' + (selected ? selected.SessionName : "") + ']');
+  }, [sessionFilter, sessions]);
 
   const createNewSession = (sessionName, date) => {
     console.log("[AT7009] Creating new session:", sessionName, "for date:", date);
@@ -223,7 +221,7 @@ const UserListComponent = () => {
             </select>
           </div>
           <div className="flex space-x-2 px-2 py-4">
-            {/* Custom Session */}
+            {/* Custom Session Search Box */}
             <div className="relative">
               <input
                 type="text"
@@ -239,22 +237,18 @@ const UserListComponent = () => {
                   setShowSuggestions(filteredSessions.length > 0 && newValue !== "");
                 }}
                 onBlur={(e) => {
-                  // Immediately hide suggestions
                   setShowSuggestions(false);
-                  
                   // Check if entered session exists
                   const sessionExists = sessions.some(
                     session => session.SessionName.toLowerCase() === e.target.value.toLowerCase()
                   );
-                  
-                  // Only show dialog if there's a value and it doesn't exist
                   if (!sessionExists && e.target.value.trim() !== "") {
                     setNewSessionName(e.target.value);
                     setShowNewSessionDialog(true);
                   }
                 }}
                 className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder={sessionFilter}
+                placeholder="Search or type to create session"
               />
               {showSuggestions && (
                 <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-60 overflow-auto dark:bg-gray-700 dark:border-gray-600">
@@ -262,8 +256,9 @@ const UserListComponent = () => {
                     <div
                       key={session.SessionID}
                       className="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-white"
-                      onClick={() => {
+                      onMouseDown={() => {
                         setCustomSession(session.SessionName);
+                        setSessionFilter(session.SessionID);
                         setShowSuggestions(false);
                       }}
                     >
@@ -273,14 +268,19 @@ const UserListComponent = () => {
                 </div>
               )}
             </div>
-            {/* Session Filter */}
+            {/* Session Filter Dropdown */}
             <select
               value={sessionFilter}
-              onChange={(e) => setSessionFilter(e.target.value)}
+              onChange={(e) => {
+                setSessionFilter(e.target.value);
+                const selected = sessions.find(s => String(s.SessionID) === String(e.target.value));
+                console.log("[AT7010] Selected Session [" + selected + "]");
+                setCustomSession(selected ? selected.SessionName : "");
+              }}
               className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               {sessions.map((session) => (
-                <option key={session.SessionID} value={session.SessionName}>
+                <option key={session.SessionID} value={session.SessionID}>
                   {session.SessionName}
                 </option>
               ))}

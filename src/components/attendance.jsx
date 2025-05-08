@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useEffect } from "react";
 import UserService from "../services/user.service";
+import AuthService from "../services/auth.service";
 
 const UserListComponent = () => {
   /** varianbles*/
@@ -23,8 +24,14 @@ const UserListComponent = () => {
   /** functions */
   const getAgeGroups = async() => {
     const response = await UserService.ageGroups();
-    setAgeCategories(response.data);
+    console.log("Age Groups", response.data);
+    setAgeCategories(response.data.data);
   }
+
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    setCustomDate(today);
+  }, []);
 
   const getSessionData = async() => { 
     const response = await UserService.getSessionData();
@@ -38,101 +45,12 @@ const UserListComponent = () => {
     }
   }
 
-  const getStudentsData = (date,session) => { 
-    /** the responce data should be fetched from the backend
-     * The LastUpdate field is used to determine if the student attendance is already set or not for the current date.
-     * if LastUpdate === "", then the student attendance is not set for the current date.
-     * The AgeCategory field is used to filter the students based on their age. */
-    const response = {
-      /** dummy data. Get this from backend. */
-        "data": [
-            {
-              "UserID": 1000,
-              "AdmisionNumber": "2364/5743",
-              "LastUpdate": "",
-              "LastUpdateBy": "",
-              "LastUpdateAt": "",
-              "AgeCategory": "Under 13",
-              "FirstName": "Ann",
-              "LastName": "Romanowski",
-            }, 
-            {
-              "UserID": 1001,
-              "AdmisionNumber": "2365/5744",
-              "LastUpdate": "Absent",
-              "LastUpdateBy": "Doltan Palanda",
-              "LastUpdateAt": "06:10 AM",
-              "AgeCategory": "Under 13",
-              "FirstName": "Nancy",
-              "LastName": "Sicari",
-            }, 
-            {
-              "UserID": 1002,
-              "AdmisionNumber": "2365/5744",
-              "LastUpdate": "Absent",
-              "LastUpdateBy": "Doltan Palanda",
-              "LastUpdateAt": "06:55 AM",
-              "AgeCategory": "Under 17",
-              "FirstName": "Jim",
-              "LastName": "Pappa",
-            },
-            {
-              "UserID": 1003,
-              "AdmisionNumber": "2365/5744",
-              "LastUpdateBy": "Doltan Palanda",
-              "LastUpdateAt": "06:09 AM",
-              "LastUpdate": "Absent",
-              "AgeCategory": "Under 11",
-              "FirstName": "Vital",
-              "LastName": "Statistix",
-             }
-        ],
-        "request": {}
-      };
-      console.log("[UE7000] StudentData: Date ["+  date + "] Session [" + session + "]");
-      if (session === "Morning Practice Session") {
-        response.data[1].LastUpdate = "Absent";
-        response.data[1].LastUpdateBy = "Doltan Palanda";
-        response.data[1].LastUpdateAt = "09:55 AM";
-        response.data[2].LastUpdate = "Present";
-        response.data[2].LastUpdateBy = "Doltan Palanda";
-        response.data[2].LastUpdateAt = "10:05 AM";
-        response.data[3].LastUpdate = "Absent";
-        response.data[3].LastUpdateBy = "Doltan Palanda";
-        response.data[3].LastUpdateAt = "10:10 AM";
-      }
-      else if (session === "Evening Practice Session") {
-        response.data[1].LastUpdate = "Present";
-        response.data[1].LastUpdateBy = "Doltan Palanda";
-        response.data[1].LastUpdateAt = "05:05 PM";
-        response.data[2].LastUpdate = "Absent";
-        response.data[2].LastUpdateBy = "Doltan Palanda";
-        response.data[2].LastUpdateAt = "05:10 PM";
-        response.data[3].LastUpdate = "Absent";
-        response.data[3].LastUpdateBy = "Doltan Palanda";
-        response.data[3].LastUpdateAt = "05:15 PM";
-      }
-      else if (session === "Natianal Championship") {
-        response.data[1].LastUpdate = "Present";
-        response.data[1].LastUpdateBy = "Doltan Palanda";
-        response.data[1].LastUpdateAt = "12:05 PM";
-        response.data[2].LastUpdate = "Present";
-        response.data[2].LastUpdateBy = "Doltan Palanda";
-        response.data[2].LastUpdateAt = "12:10 PM";
-        response.data[3].LastUpdate = "Present";
-        response.data[3].LastUpdateBy = "Doltan Palanda";
-        response.data[3].LastUpdateAt = "12:15 PM";
-      }
-      if(date == "2025-03-01") {
-        response.data[0].LastUpdate = "Present";
-        response.data[0].LastUpdateBy = "Doltan Palanda";
-        response.data[0].LastUpdateAt = "19:00 PM";
-        response.data[1].LastUpdateAt = "09:05 PM";
-        response.data[2].LastUpdateAt = "09:10 PM";
-        response.data[3].LastUpdateAt = "09:15 PM";
-      }
-      return response;
-    }
+  const getStudentsData = async (date) => {
+    const response = await UserService.getAttendancedata(date);
+    setStudents(response.data.attendanceData);
+    console.log(response.data)
+    return response;
+  };
 
   const getStudentsFiltered = (date,session) => {
     /** Filter the student data using the user selection. We will use searchQuery and ageFilter*/
@@ -152,9 +70,15 @@ const UserListComponent = () => {
      * Change dialog box if the student is not already marked as present or absent.
      * The LastUpdate variable halds the status if the student was atleast marked once today*/
     if(student.LastUpdate === "") {
-        console.log("[UE7001] Set Attendance of ["+ student.LastName + "] to [" + isPresent + "] on [" + customDate + "] for [" + customSession + "]");
-        /** call backend function setAttendance(student.UserID, isPresent); */
-        fetchFilteredStudents(); //load all student data.
+      const response = AuthService.getCurrentUser();
+      const data = {
+        memberId: student.UserID,
+        date: customDate,
+        present: isPresent,
+        markedBy: response.id
+      };
+      UserService.markAttendance(data);
+      getStudentsData();
     }
     else if(student.LastUpdate === isPresent) {
         console.log("[UE7002]Attendance already set to [" + isPresent, "] for [" + student.LastName + "] on [" + customDate + "] for [" + customSession + "]");

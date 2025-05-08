@@ -23,9 +23,14 @@ const UserListComponent = () => {
   /** functions */
   const getAgeGroups = async() => {
     const response = await UserService.ageGroups();
-    setAgeCategories(response.data);
+    setAgeCategories(response.data.data);
   }
 
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    setCustomDate(today);
+  }, []);
+  
   const getSessionData = async() => { 
     const response = await UserService.getSessionData();
     setSessions(response.data.sessions);
@@ -33,7 +38,7 @@ const UserListComponent = () => {
     if (response.data && response.data.length > 0) {
       setSessionFilter(response.data[0].SessionName);
       setCustomSession(response.data[0].SessionName);
-      setCustomDate(response.data[0].SessionDate);
+      // setCustomDate(response.data[0].SessionDate);
     }
   }
 
@@ -48,64 +53,17 @@ const UserListComponent = () => {
     setEventLengths(response.data.eventLengths);
   }
 
-
-  const getStudentsData = () => { 
-    /** the responce data should be fetched from the backend
-     * The LastUpdate field is used to determine if the student attendance is already set or not for the current date.
-     * if LastUpdate === "", then the student attendance is not set for the current date.
-     * The AgeCategory field is used to filter the students based on their age. */
-    const response = {
-      /** dummy data. Get this from backend. */
-        "data": [
-            {
-              "UserID": 1000,
-              "AdmisionNumber": "2364/5743",
-              "LastUpdate": "",
-              "LastUpdateBy": "",
-              "LastUpdateAt": "",
-              "AgeCategory": "Under 13",
-              "FirstName": "Ann",
-              "LastName": "Romanowski",
-              "bestTiming": "0:23.76",
-            }, 
-            {
-              "UserID": 1001,
-              "AdmisionNumber": "2365/5744",
-              "LastUpdate": "Present",
-              "LastUpdateBy": "Doltan Palanda",
-              "LastUpdateAt": "10:10 AM",
-              "AgeCategory": "Under 13",
-              "FirstName": "Nancy",
-              "LastName": "Sicari",
-              "bestTiming": "0:25.13",
-            }, 
-            {
-              "UserID": 1002,
-              "AdmisionNumber": "2365/5744",
-              "LastUpdate": "Absent",
-              "LastUpdateBy": "Doltan Palanda",
-              "LastUpdateAt": "09:55 AM",
-              "AgeCategory": "Under 17",
-              "FirstName": "Jim",
-              "LastName": "Pappa",
-              "bestTiming": "0:25.98",
-            },
-            {
-              "UserID": 1003,
-              "AdmisionNumber": "2365/5744",
-              "LastUpdateBy": "Doltan Palanda",
-              "LastUpdateAt": "10:09 AM",
-              "LastUpdate": "Present",
-              "AgeCategory": "Under 11",
-              "FirstName": "Vital",
-              "LastName": "Statistix",
-              "bestTiming": "0:22.37",
-             }
-        ],
-        "request": {}
-      };
-      return response;
+  const getStudentsData = async (date, session) => {
+    if (!date) {
+      date = ""
     }
+    if (!session) {
+      session = ""
+    }
+    const response = await UserService.getAttendancedata(date, session);
+    setStudents(response.data.attendanceData);
+    return response;
+  }; 
 
   const getStudentsFiltered = () => {
     /** Filter the student data using the user selection. We will use searchQuery and ageFilter*/

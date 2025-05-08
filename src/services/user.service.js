@@ -55,6 +55,17 @@ const getEventLengths = () => {
   return api.get(API_URL + "users/getEventLengths", { headers: authHeader() });
 }
 
+const getAttendancedata = (date) => {
+  const encodedDate = encodeURIComponent(date);
+  return api.get(`${API_URL}users/getAttendancedata?date=${encodedDate}`, {
+    headers: authHeader()
+  });
+};
+
+export const markAttendance = (data) => {
+  return api.post(API_URL + "users/markAttendance", data, { headers: authHeader() });
+};
+
 const UserService = {
   notApprovedUsers,
   getAllUsers,
@@ -68,6 +79,8 @@ const UserService = {
   getSessionData,
   getEventTypes,
   getEventLengths,
+  getAttendancedata,
+  markAttendance,
 };
 
 export default UserService;

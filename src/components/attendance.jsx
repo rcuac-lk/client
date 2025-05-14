@@ -72,7 +72,7 @@ const UserListComponent = () => {
         date: customDate,
         present: isPresent,
         markedBy: response.id,
-        sessionId: sessionFilter
+        session: sessionFilter
       };
       UserService.markAttendance(data);
       getStudentsData(customDate, sessionFilter);
@@ -96,13 +96,20 @@ const UserListComponent = () => {
   };
 
   const handleChange = async () => {
-    console.log("[UE7003] handleChange [" + selectedUser.FirstName + " " + selectedUser.LastName, "] set to Present [" + isPresent + "] on [" + customDate + "] for [" + customSession + "]");
     try {
-        /**call backend function setAttendance(selectedUser.UserID, isPresent); */
+      const response = AuthService.getCurrentUser();
+      const data = {
+        memberId: selectedUser.UserID,
+        date: customDate,
+        present: isPresent,
+        markedBy: response.id,
+        session: sessionFilter
+      };
+      await UserService.markAttendance(data);
       closeChangeModal();
       fetchFilteredStudents();
     } catch (error) {
-      console.error("[UE7004] Error Change Attendande :", error);
+      console.error("Error Change Attendance :", error);
     }
   };
 
@@ -314,12 +321,35 @@ const UserListComponent = () => {
                   </div>
                 </th>
                 <td className="px-6 py-4">{student.AgeCategory}</td>
-                <td className="px-2 py-2 flex">
+                <td className="px-2 py-2 flex space-x-2">
                   <div className="flex items-center">
-                    <button type="button" onClick={() => openChangeModal(student,"Present")} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"> Present </button>
+                    <button
+                      type="button"
+                      disabled={student.LastUpdate === "Present"}
+                      onClick={() => openChangeModal(student, "Present")}
+                      className={`text-white font-medium rounded-lg text-sm px-5 py-2.5 mb-2 focus:outline-none
+                        ${student.LastUpdate === "Present" 
+                          ? "bg-gray-400 cursor-not-allowed" 
+                          : "bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                        }`}
+                    >
+                      Present
+                    </button>
                   </div>
+
                   <div className="flex items-center">
-                    <button type="button" onClick={() => openChangeModal(student,"Absent")} className="text-white bg-red-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"> Absent </button>
+                    <button
+                      type="button"
+                      disabled={student.LastUpdate === "Absent"}
+                      onClick={() => openChangeModal(student, "Absent")}
+                      className={`text-white font-medium rounded-lg text-sm px-5 py-2.5 mb-2 focus:outline-none
+                        ${student.LastUpdate === "Absent" 
+                          ? "bg-gray-400 cursor-not-allowed" 
+                          : "bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
+                        }`}
+                    >
+                      Absent
+                    </button>
                   </div>
                 </td>
                 <td className="px-6 py-4">{student.LastUpdate}</td>
@@ -334,6 +364,7 @@ const UserListComponent = () => {
           <div
             id="Change-modal"
             tabIndex="-1"
+            role="dialog"
             aria-hidden="true"
             className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full"
           >

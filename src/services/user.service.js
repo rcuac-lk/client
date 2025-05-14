@@ -55,9 +55,10 @@ const getEventLengths = () => {
   return api.get(API_URL + "users/getEventLengths", { headers: authHeader() });
 }
 
-const getAttendancedata = (date) => {
+const getAttendancedata = (date, session) => {
   const encodedDate = encodeURIComponent(date);
-  return api.get(`${API_URL}users/getAttendancedata?date=${encodedDate}`, {
+  const encodedSession = encodeURIComponent(session);
+  return api.get(`${API_URL}users/getAttendancedata?date=${encodedDate}&session=${encodedSession}`, {
     headers: authHeader()
   });
 };

@@ -78,8 +78,9 @@ const UserListComponent = () => {
         markedBy: response.id,
         session: sessionFilter
       };
-      UserService.markAttendance(data);
-      getStudentsData(customDate, sessionFilter);
+      UserService.markAttendance(data).then(() => {
+        fetchFilteredStudents();
+      });
     }
     else if(student.LastUpdate === isPresent) {
         console.log("[UE7002]Attendance already set to [" + isPresent, "] for [" + student.LastName + "] on [" + customDate + "] for [" + customSession + "]");

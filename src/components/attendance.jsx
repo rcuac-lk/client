@@ -218,6 +218,7 @@ const UserListComponent = () => {
   const handleAgeFilterChange = async (e) => {
     const newAgeFilter = e.target.value;
     setAgeFilter(newAgeFilter);
+    setSearchQuery("");
     await getStudentsData(customDate, sessionFilter, newAgeFilter);
   };
 

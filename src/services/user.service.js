@@ -55,10 +55,12 @@ const getEventLengths = () => {
   return api.get(API_URL + "users/getEventLengths", { headers: authHeader() });
 }
 
-const getAttendancedata = (date, session) => {
+const getAttendancedata = (date, session, age) => {
   const encodedDate = encodeURIComponent(date);
   const encodedSession = encodeURIComponent(session);
-  return api.get(`${API_URL}users/getAttendancedata?date=${encodedDate}&session=${encodedSession}`, {
+  const encodedAge = encodeURIComponent(age)
+  console.log("age : ", age)
+  return api.get(`${API_URL}users/getAttendancedata?date=${encodedDate}&session=${encodedSession}&age=${encodedAge}`, {
     headers: authHeader()
   });
 };

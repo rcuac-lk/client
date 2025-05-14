@@ -4,9 +4,9 @@ import UserService from "../services/user.service";
 import AuthService from "../services/auth.service";
 
 const UserListComponent = () => {
-  /** varianbles*/
-  const [selectedUser, setSelectedUser] = useState({}); // To store the selected user's data
+  const [selectedUser, setSelectedUser] = useState({});
   const [students, setStudents] = useState([]);
+  const [filteredStudents, setFilteredStudents] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [ageFilter, setAgeFilter] = useState("");
   const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
@@ -21,7 +21,6 @@ const UserListComponent = () => {
   const [showNewSessionDialog, setShowNewSessionDialog] = useState(false);
   const [newSessionName, setNewSessionName] = useState("");
 
-  /** functions */
   const getAgeGroups = async() => {
     const response = await UserService.ageGroups();
     console.log("Age Groups", response.data);
@@ -42,29 +41,34 @@ const UserListComponent = () => {
     }
   }
 
-  const getStudentsData = async (date, sessionId) => {
-    const response = await UserService.getAttendancedata(date, sessionId);
-    setStudents(response.data.attendanceData);
+  const getStudentsData = async (date, sessionId, ageFilter) => {
+    const response = await UserService.getAttendancedata(date, sessionId, ageFilter);
+    const studentData = response.data.attendanceData;
+    setStudents(studentData);
+    setFilteredStudents(studentData);
+    if (searchQuery.trim()) {
+      filterStudentsByName(searchQuery);
+    }
     return response;
   };
 
-  const getStudentsFiltered = (date, sessionId) => {
-    /** Filter the student data using the user selection. We will use searchQuery and ageFilter*/
-    const response = getStudentsData(date, sessionId);
-      const filteredData = response.data.filter(student => {
+  const getStudentsFiltered = async (date, sessionId) => {
+    try {
+      const response = await getStudentsData(date, sessionId, ageFilter);
+      const filteredData = response.data.attendanceData.filter(student => {
         const matchesSearchQuery = searchQuery === "" || 
-        student.FirstName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        student.LastName.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesRoleFilter = ageFilter === "" || student.AgeCategory === ageFilter;
-        return matchesSearchQuery && matchesRoleFilter;
+          student.FirstName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+          student.LastName.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesSearchQuery;
       });
       return { ...response, data: filteredData };
-  }
+    } catch (error) {
+      console.error("Error in getStudentsFiltered:", error);
+      return { data: [] };
+    }
+  };
 
   const openChangeModal = (student, isPresent) => {
-    /** Check the change request, (which button was pressed) and open the Attandance 
-     * Change dialog box if the student is not already marked as present or absent.
-     * The LastUpdate variable halds the status if the student was atleast marked once today*/
     if(student.LastUpdate === "") {
       const response = AuthService.getCurrentUser();
       const data = {
@@ -79,13 +83,12 @@ const UserListComponent = () => {
     }
     else if(student.LastUpdate === isPresent) {
         console.log("[UE7002]Attendance already set to [" + isPresent, "] for [" + student.LastName + "] on [" + customDate + "] for [" + customSession + "]");
-        fetchFilteredStudents(); //load all student data.
+        fetchFilteredStudents();
     }
     else {
-        /** Open the dialogbox to get the change */
-        setSelectedUser(student);
-        setIsPresent(isPresent);
-        setIsChangeModalOpen(true);
+      setSelectedUser(student);
+      setIsPresent(isPresent);
+      setIsChangeModalOpen(true);
     }
   };
 
@@ -114,23 +117,19 @@ const UserListComponent = () => {
   };
 
   const fetchFilteredStudents = async () => {
-    console.log("[AT7005] call fetchFilteredStudents ()");
     try {
-      /** const response = await UserService.searchUsers(searchQuery, ageFilter); */
-      const response = getStudentsFiltered(customDate, sessionFilter);
-      //console.log(response.data);
+      const response = await getStudentsFiltered(customDate, sessionFilter);
       setStudents(response.data);
+      setFilteredStudents(response.data);
     } catch (error) {
-      console.error("[AT7006] Error fetching filtered Students :", error);
+      console.error("Error fetching filtered Students :", error);
     }
   };
 
-  /** load the student data */
   useEffect(() => {
     fetchFilteredStudents();
   }, [searchQuery, ageFilter, customDate, sessionFilter]);
 
-  /** load the age categories */
   useEffect(() => {
     const fetchStaticData = async () => {
       try {
@@ -144,22 +143,21 @@ const UserListComponent = () => {
     fetchStaticData();
   }, []);
 
-  // Update customSession when sessionFilter changes
   useEffect(() => {
     const selected = sessions.find(s => String(s.SessionID) === String(sessionFilter));
     setCustomSession(selected ? selected.SessionName : "");
-    console.log("[AT7008] Session Filter [" + sessionFilter + '][' + (selected ? selected.SessionName : "") + ']');
+    console.log("Session Filter [" + sessionFilter + '][' + (selected ? selected.SessionName : "") + ']');
   }, [sessionFilter, sessions]);
 
   const createNewSession = (sessionName, date) => {
-    console.log("[AT7009] Creating new session:", sessionName, "for date:", date);
+    console.log("Creating new session:", sessionName, "for date:", date);
     // TODO: Call backend API to create new session
     // After successful creation, refresh the sessions list
     const newSession = {
-      SessionID: Date.now(), // Temporary ID for demo
+      SessionID: Date.now(),
       SessionName: sessionName,
       SessionDate: date,
-      SessionTime: "12:00 PM", // Default time
+      SessionTime: "12:00 PM",
       SessionLocation: "TBD",
       SessionDescription: "New Session"
     };
@@ -175,10 +173,9 @@ const UserListComponent = () => {
 
   const handleNewSessionCancel = () => {
     setShowNewSessionDialog(false);
-    setCustomSession(sessionFilter); // Reset to previously selected session
+    setCustomSession(sessionFilter);
   };
 
-  /** Add this new function near the other modal-related functions */
   const handleEscapeKey = (event) => {
     if (event.key === 'Escape') {
       handleNewSessionCancel();
@@ -187,9 +184,7 @@ const UserListComponent = () => {
 
   useEffect(() => {
     if (showNewSessionDialog) {
-      // Add event listener for escape key
       document.addEventListener('keydown', handleEscapeKey);
-      // Prevent background scrolling
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -201,6 +196,30 @@ const UserListComponent = () => {
     };
   }, [showNewSessionDialog]);
 
+  const filterStudentsByName = (searchText) => {
+    console.log("Filtering with text:", searchText);
+    if (!searchText.trim()) {
+      setFilteredStudents(students);
+      return;
+    }
+    
+    const filtered = students.filter(student => {
+      const fullName = `${student.FirstName} ${student.LastName}`.toLowerCase();
+      const searchLower = searchText.toLowerCase();
+      const matches = fullName.includes(searchLower);
+      console.log(`Checking ${fullName} against ${searchLower}: ${matches}`);
+      return matches;
+    });
+    console.log("Filtered results:", filtered.length);
+    setFilteredStudents(filtered);
+  };
+
+  const handleAgeFilterChange = async (e) => {
+    const newAgeFilter = e.target.value;
+    setAgeFilter(newAgeFilter);
+    await getStudentsData(customDate, sessionFilter, newAgeFilter);
+  };
+
   return (
     <div>
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg mt-16">
@@ -210,14 +229,18 @@ const UserListComponent = () => {
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                const newSearchText = e.target.value;
+                setSearchQuery(newSearchText);
+                filterStudentsByName(newSearchText);
+              }}
               className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="Search by name"
             />
             {/* Role Filter */}
             <select
               value={ageFilter}
-              onChange={(e) => setAgeFilter(e.target.value)}
+              onChange={handleAgeFilterChange}
               className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               {ageCategories.map((category) => (
@@ -311,7 +334,7 @@ const UserListComponent = () => {
             </tr>
           </thead>
           <tbody>
-            {students.map((student) => (
+            {filteredStudents.map((student) => (
               <tr key={student.UserID} className="bg-gray-800 border-gray-700 hover:bg-gray-600">
                 <th scope="row" className="flex items-center px-6 py-4 whitespace-nowrap text-white">
                   <div className="ps-3">

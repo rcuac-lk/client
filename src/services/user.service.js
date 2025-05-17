@@ -65,9 +65,13 @@ const getAttendancedata = (date, session, age) => {
   });
 };
 
-export const markAttendance = (data) => {
+const markAttendance = (data) => {
   return api.post(API_URL + "users/markAttendance", data, { headers: authHeader() });
 };
+
+const markTiming = (data) => {
+  return api.post(API_URL + "users/markTiming", data, { headers: authHeader() });
+}
 
 const UserService = {
   notApprovedUsers,
@@ -84,6 +88,7 @@ const UserService = {
   getEventLengths,
   getAttendancedata,
   markAttendance,
+  markTiming
 };
 
 export default UserService;

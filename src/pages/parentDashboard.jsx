@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AuthService from "../services/auth.service";
 import UserService from "../services/user.service";
 import ParentService from "../services/parent.service";
+import Reports from "../components/reports";
 
 const ParentDashboard = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -261,6 +262,24 @@ const handleInputChange = (e) => {
                 <span className="ms-3">Dashboard</span>
               </a>
             </li>
+            <li>
+              <a
+                href="#"
+                onClick={() => handleMenuClick("reports")}
+                className="flex items-center p-2 rounded-lg text-white hover:bg-gray-700 group"
+              >
+                <svg
+                  className="w-5 h-5 transition duration-75 text-gray-400 group-hover:text-white"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 22 21"
+                >
+                  <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span className="ms-3">Reports</span>
+              </a>
+            </li>
             {/* Other items here */}
 
           </ul>
@@ -305,6 +324,9 @@ const handleInputChange = (e) => {
               </div>
               </div>
             </>
+          )}
+          {selectedSection === 'reports' && (
+            <Reports />
           )}
         </div>
       </div>

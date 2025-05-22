@@ -157,8 +157,12 @@ const UserListComponent = (props) => {
       } else if (isCoach) {
         response = await CoachService.searchUsers(searchQuery, roleFilter);
       }
-      console.log(response.data);
-      setUsers(response.data);
+      // Map backend's Approved property to IsApproved for button logic
+      const usersWithApproval = response.data.map(user => ({
+        ...user,
+        IsApproved: user.Approved === true
+      }));
+      setUsers(usersWithApproval);
     } catch (error) {
       console.error("Error fetching filtered users:", error);
     }

@@ -11,6 +11,7 @@ const UserListComponent = (props) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   const userRole = props.role;
   const isAdmin = userRole === "Admin";
@@ -53,6 +54,16 @@ const UserListComponent = (props) => {
     setSelectedUser(null);
   };
 
+  const openConfirmModal = (user) => {
+    setSelectedUser(user);
+    setIsConfirmModalOpen(true);
+  };
+
+  const closeConfirmModal = () => {
+    setIsConfirmModalOpen(false);
+    setSelectedUser(null);
+  };
+
   const handleReject = async () => {
     try {
       if (isAdmin) {
@@ -69,6 +80,22 @@ const UserListComponent = (props) => {
     }
   };
 
+  const handleApprove = async () => {
+    try {
+      if (isAdmin) {
+        await UserService.approveUser(selectedUser.UserID);
+      } else if (isManager) {
+        await ManagerService.approveUser(selectedUser.UserID);
+      } else if (isCoach) {
+        await CoachService.approveUser(selectedUser.UserID);
+      }
+      closeConfirmModal();
+      allUsers();
+    } catch (error) {
+      console.error("Error approving user:", error);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setSelectedUser({ ...selectedUser, [name]: value });
@@ -79,16 +106,16 @@ const UserListComponent = (props) => {
     try {
       await UserService.updateUser(selectedUser.UserID, selectedUser);
       setIsModalOpen(false);
-      allUsers();
+      await allUsers();
     } catch (error) {
       console.error("Error updating user:", error);
     }
   };
 
-  const saveChanges = async () => {
+  const saveChanges = async (e) => {
+    if (e) e.preventDefault();
     try {
       await UserService.updateUser(selectedUser.UserID, selectedUser);
-      console.log(selectedUser);
       setIsModalOpen(false);
       allUsers();
     } catch (error) {
@@ -98,19 +125,25 @@ const UserListComponent = (props) => {
 
   const allUsers = async () => {
     try {
-      let response = "";
+      let approvedResponse = "";
+      let unapprovedResponse = "";
       if (isAdmin) {
-        response = await UserService.approvedUsers();
-        setUsers(response.data);
+        approvedResponse = await UserService.approvedUsers();
+        unapprovedResponse = await UserService.notApprovedUsers();
       } else if (isManager) {
-        response = await ManagerService.approvedUsers();
-        setUsers(response.data);
+        approvedResponse = await ManagerService.approvedUsers();
+        unapprovedResponse = await ManagerService.notApprovedUsers();
       } else if (isCoach) {
-        response = await CoachService.approvedUsers();
-        setUsers(response.data);
+        approvedResponse = await CoachService.approvedUsers();
+        unapprovedResponse = await CoachService.notApprovedUsers();
       }
+      
+      // Combine approved and unapproved users
+      const approvedUsers = approvedResponse.data.map(user => ({ ...user, IsApproved: true }));
+      const unapprovedUsers = unapprovedResponse.data.map(user => ({ ...user, IsApproved: false }));
+      setUsers([...approvedUsers, ...unapprovedUsers]);
     } catch (error) {
-      console.error("Error fetching approved users:", error);
+      console.error("Error fetching users:", error);
     }
   };
 
@@ -195,16 +228,9 @@ const UserListComponent = (props) => {
         <table className="w-full text-sm text-left rtl:text-right text-gray-400">
           <thead className="text-xs uppercase bg-gray-700 text-gray-400">
             <tr>
-              <th scope="col" className="px-6 py-3">
-                Name
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Role
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Action
-              </th>
-              {isAdmin && <th scope="col" className="px-6 py-3"></th>}
+              <th scope="col" className="px-6 py-3">NAME</th>
+              <th scope="col" className="px-6 py-3">ROLE</th>
+              <th scope="col" className="px-6 py-3">ACTION</th>
             </tr>
           </thead>
           <tbody>
@@ -228,27 +254,37 @@ const UserListComponent = (props) => {
                 </th>
                 <td className="px-6 py-4">{user.Role}</td>
                 <td className="px-6 py-4">
-                  <a
-                    href="#"
-                    onClick={() => openModal(user.UserID)}
-                    className="font-medium text-blue-500 hover:underline"
-                  >
-                    Edit user
-                  </a>
-                </td>
-                {isAdmin && (
-                  <td className="py-4">
-                  <div className="flex items-center">
+                  <div className="flex flex-row gap-x-2">
                     <button
                       type="button"
-                      onClick={() => openRejectModal(user)}
-                      className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                      onClick={() => openModal(user.UserID)}
+                      className="text-white bg-yellow-600 hover:bg-yellow-700 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-800"
                     >
-                      Remove User
+                      Edit User
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => openConfirmModal(user)}
+                      disabled={user.IsApproved}
+                      className={`font-medium rounded-lg text-sm px-5 py-2.5 focus:ring-4 focus:outline-none ${
+                        user.IsApproved
+                          ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                          : 'text-white bg-green-700 hover:bg-green-800 focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800'
+                      }`}
+                    >
+                      {user.IsApproved ? 'Approved' : 'Approve'}
+                    </button>
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={() => openRejectModal(user)}
+                        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                      >
+                        Remove User
+                      </button>
+                    )}
                   </div>
                 </td>
-                )}
               </tr>
             ))}
           </tbody>
@@ -335,6 +371,86 @@ const UserListComponent = (props) => {
           </div>
         )}
 
+        {/* Confirmation Modal */}
+        {isConfirmModalOpen && (
+          <div
+            id="confirm-modal"
+            tabIndex="-1"
+            aria-hidden="true"
+            className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full"
+          >
+            <div className="relative w-full max-w-md max-h-full">
+              <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                <button
+                  type="button"
+                  onClick={closeConfirmModal}
+                  className="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                >
+                  <svg
+                    className="w-3 h-3"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 14 14"
+                  >
+                    <path
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                    />
+                  </svg>
+                  <span className="sr-only">Close modal</span>
+                </button>
+                <div className="p-4 md:p-5 text-center">
+                  <svg
+                    className="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                  </svg>
+                  <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+                    Are you sure you want to approve this user?
+                  </h3>
+                  <div className="mb-4 text-center">
+                    <p className="text-gray-600 dark:text-gray-300">
+                      <strong>Name:</strong> {selectedUser.FirstName}{" "}
+                      {selectedUser.LastName}
+                    </p>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      <strong>Email:</strong> {selectedUser.Email}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleApprove}
+                    className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+                  >
+                    Yes, approve
+                  </button>
+                  <button
+                    type="button"
+                    onClick={closeConfirmModal}
+                    className="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                  >
+                    No, cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {isModalOpen && (
           <div
             id="editUserModal"
@@ -344,7 +460,7 @@ const UserListComponent = (props) => {
           >
             <div className="relative w-full max-w-2xl max-h-full">
               <form
-                onSubmit={handleSubmit}
+                onSubmit={saveChanges}
                 className="relative rounded-lg shadow bg-gray-700"
               >
                 <div className="flex items-start justify-between p-4 rounded-t border-gray-600">
@@ -472,7 +588,6 @@ const UserListComponent = (props) => {
                 <div className="flex items-center p-6 space-x-2 border-t rounded-b border-gray-600">
                   <button
                     type="submit"
-                    onClick={saveChanges}
                     className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                   >
                     Save changes

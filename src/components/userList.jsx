@@ -10,6 +10,7 @@ const UserListComponent = (props) => {
   const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
+  const [approvalFilter, setApprovalFilter] = useState("all"); // Values: "all", "pending", "approved"
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
@@ -149,8 +150,8 @@ const UserListComponent = (props) => {
 
   const fetchFilteredUsers = async () => {
     try {
-      // If no search query or role filter, just show all users
-      if (searchQuery === "" && roleFilter === "") {
+      // If no search query or role filter, and approval filter is set to all, just show all users
+      if (searchQuery === "" && roleFilter === "" && approvalFilter === "all") {
         allUsers();
         return;
       }
@@ -188,8 +189,20 @@ const UserListComponent = (props) => {
           IsApproved: false
         }));
       
-      // Combine both sets of users
-      setUsers([...approvedUsers, ...unapprovedUsers]);
+      // Apply approval filter
+      let filteredUsers = [];
+      if (approvalFilter === "pending") {
+        // Only show unapproved users
+        filteredUsers = unapprovedUsers;
+      } else if (approvalFilter === "approved") {
+        // Only show approved users
+        filteredUsers = approvedUsers;
+      } else {
+        // Show both approved and unapproved users
+        filteredUsers = [...approvedUsers, ...unapprovedUsers];
+      }
+      
+      setUsers(filteredUsers);
     } catch (error) {
       console.error("Error fetching filtered users:", error);
     }
@@ -201,7 +214,7 @@ const UserListComponent = (props) => {
 
   useEffect(() => {
     fetchFilteredUsers();
-  }, [searchQuery, roleFilter]);
+  }, [searchQuery, roleFilter, approvalFilter]);
 
   return (
     <div>
@@ -218,13 +231,13 @@ const UserListComponent = (props) => {
           </div>
         </div> */}
         <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 md:space-y-0 py-4 bg-gray-900">
-          <div className="flex space-x-4 px-2">
+          <div className="flex space-x-4 px-2 items-center">
             {/* Search Input */}
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="block h-10 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="Search by name"
             />
 
@@ -254,6 +267,17 @@ const UserListComponent = (props) => {
               <option value="Parent">Parent</option>
             </select>
             )}
+            
+            {/* Approval Status Filter */}
+            <select
+              value={approvalFilter}
+              onChange={(e) => setApprovalFilter(e.target.value)}
+              className="block w-52 h-10 px-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white"
+            >
+              <option value="all">All Users</option>
+              <option value="pending">Pending Approval</option>
+              <option value="approved">Approved</option>
+            </select>
           </div>
         </div>
         <table className="w-full text-sm text-left rtl:text-right text-gray-400">

@@ -74,7 +74,7 @@ const UserListComponent = (props) => {
         await CoachService.rejectUser(selectedUser.UserID);
       }
       closeRejectModal();
-      allUsers();
+      fetchFilteredUsers();
     } catch (error) {
       console.error("Error rejecting user:", error);
     }
@@ -90,7 +90,7 @@ const UserListComponent = (props) => {
         await CoachService.approveUser(selectedUser.UserID);
       }
       closeConfirmModal();
-      allUsers();
+      fetchFilteredUsers();
     } catch (error) {
       console.error("Error approving user:", error);
     }
@@ -106,7 +106,7 @@ const UserListComponent = (props) => {
     try {
       await UserService.updateUser(selectedUser.UserID, selectedUser);
       setIsModalOpen(false);
-      await allUsers();
+      fetchFilteredUsers();
     } catch (error) {
       console.error("Error updating user:", error);
     }
@@ -117,7 +117,7 @@ const UserListComponent = (props) => {
     try {
       await UserService.updateUser(selectedUser.UserID, selectedUser);
       setIsModalOpen(false);
-      allUsers();
+      fetchFilteredUsers();
     } catch (error) {
       console.error("Error updating user:", error);
     }

@@ -149,20 +149,47 @@ const UserListComponent = (props) => {
 
   const fetchFilteredUsers = async () => {
     try {
-      let response = "";
-      if (isAdmin) {
-        response = await UserService.searchUsers(searchQuery, roleFilter);
-      } else if (isManager) {
-        response = await ManagerService.searchUsers(searchQuery, roleFilter);
-      } else if (isCoach) {
-        response = await CoachService.searchUsers(searchQuery, roleFilter);
+      // If no search query or role filter, just show all users
+      if (searchQuery === "" && roleFilter === "") {
+        allUsers();
+        return;
       }
+
+      // Get both approved and unapproved users
+      let approvedResponse = "";
+      let unapprovedResponse = "";
+      
+      if (isAdmin) {
+        approvedResponse = await UserService.searchUsers(searchQuery, roleFilter);
+        unapprovedResponse = await UserService.notApprovedUsers();
+      } else if (isManager) {
+        approvedResponse = await ManagerService.searchUsers(searchQuery, roleFilter);
+        unapprovedResponse = await ManagerService.notApprovedUsers();
+      } else if (isCoach) {
+        approvedResponse = await CoachService.searchUsers(searchQuery, roleFilter);
+        unapprovedResponse = await CoachService.notApprovedUsers();
+      }
+      
       // Map backend's Approved property to IsApproved for button logic
-      const usersWithApproval = response.data.map(user => ({
+      const approvedUsers = approvedResponse.data.map(user => ({
         ...user,
-        IsApproved: user.Approved === true
+        IsApproved: true
       }));
-      setUsers(usersWithApproval);
+      
+      // Filter unapproved users to match search criteria
+      const unapprovedUsers = unapprovedResponse.data
+        .filter(user => {
+          const nameMatch = `${user.FirstName} ${user.LastName}`.toLowerCase().includes(searchQuery.toLowerCase());
+          const roleMatch = roleFilter === "" || user.Role === roleFilter;
+          return nameMatch && roleMatch;
+        })
+        .map(user => ({
+          ...user,
+          IsApproved: false
+        }));
+      
+      // Combine both sets of users
+      setUsers([...approvedUsers, ...unapprovedUsers]);
     } catch (error) {
       console.error("Error fetching filtered users:", error);
     }

@@ -145,9 +145,24 @@ const PendingApprovalsComponent = (props) => {
         }
     };
 
-    const saveChanges = async () => {
+    const saveChanges = async (e) => {
+        e.preventDefault();
+    
+        const hasChanges = 
+        formData.admissionNumber !== selectedUser.AdmissionNumber ||
+        formData.firstName !== selectedUser.FirstName ||
+        formData.lastName !== selectedUser.LastName ||
+        formData.dateOfBirth !== new Date(selectedUser.DOB).toISOString().split('T')[0];
+
+        if (!hasChanges) {
+        setFormErrors({
+            submit: 'No changes were made to update'
+        });
+        return;
+        }
+
         if (!validateForm()) {
-            return;
+        return;
         }
 
         try {
@@ -157,9 +172,14 @@ const PendingApprovalsComponent = (props) => {
                 lastName: formData.lastName.trim(),
                 dateOfBirth: formData.dateOfBirth
             };
-            await UserService.updateStudent(selectedUser.StudentID, data);
-            closeEditModal();
-            fetchFilteredUsers();
+
+            console.log('Sending update data:', data);
+            const response = await UserService.updateStudent(selectedUser.StudentID, data);
+            
+            if (response && response.data) {
+                closeEditModal();
+                fetchFilteredUsers();
+            }
         } catch (error) {
             console.error("Error updating student:", error);
             const errorMessage = error.response?.data?.message || 
@@ -388,7 +408,7 @@ const PendingApprovalsComponent = (props) => {
                 {isEditModalOpen && (
                     <div id="editUserModal" tabIndex="-1" aria-hidden="true" className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
                         <div className="relative w-full max-w-2xl max-h-full">
-                            <form onSubmit={(e) => { e.preventDefault(); saveChanges(); }} className="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                            <form onSubmit={saveChanges} className="relative bg-white rounded-lg shadow dark:bg-gray-700">
                                 <div className="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
                                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                                         Edit Student Profile

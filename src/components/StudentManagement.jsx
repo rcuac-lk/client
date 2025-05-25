@@ -171,6 +171,20 @@ const StudentManagement = () => {
 
   const handleUpdateStudent = async (e) => {
     e.preventDefault();
+    
+    const hasChanges = 
+      formData.admissionNumber !== selectedStudent.AdmissionNumber ||
+      formData.firstName !== selectedStudent.FirstName ||
+      formData.lastName !== selectedStudent.LastName ||
+      formData.dateOfBirth !== new Date(selectedStudent.DOB).toISOString().split('T')[0];
+
+    if (!hasChanges) {
+      setFormErrors({
+        submit: 'No changes were made to update'
+      });
+      return;
+    }
+
     if (!validateForm()) {
       return;
     }

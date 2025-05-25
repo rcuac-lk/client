@@ -44,7 +44,7 @@ const saveChanges = async (event) => {
       selectedUser
     );
     if(response.status === 200){
-      const response = await UserService.getUser(selectedUser.UserID)
+      const response = await ManagerService.getUser(selectedUser.UserID)
       setUserDetails(response.data);
       setRole(response.data.Role);
       setIsEditModalOpen(false);
@@ -85,7 +85,7 @@ const handleInputChange = (e) => {
   const fetchUserDetails = async () => {
     try {
       const userId = AuthService.getCurrentUser().id;
-      const response = await UserService.getUser(userId)
+      const response = await ManagerService.getUser(userId)
       setUserDetails(response.data);
       setRole(response.data.Role);
       console.log("User Details:", response);

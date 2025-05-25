@@ -40,7 +40,7 @@ const ParentDashboard = () => {
       selectedUser
     );
     if(response.status === 200){
-      const response = await UserService.getUser(selectedUser.UserID)
+      const response = await ParentService.getUser(selectedUser.UserID)
       setUserDetails(response.data);
       setIsEditModalOpen(false);
     }
@@ -80,7 +80,7 @@ const ParentDashboard = () => {
   const fetchUserDetails = async () => {
     try {
       const userId = AuthService.getCurrentUser().id;
-      const response = await UserService.getUser(userId)
+      const response = await ParentService.getUser(userId)
       setUserDetails(response.data);
       console.log("User Details:", response);
       if (!response) {

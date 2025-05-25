@@ -36,14 +36,22 @@ const closeEditModal = () => {
     setSelectedUser(null);
 };
   
-const saveChanges = async () => {
+const saveChanges = async (event) => {
+  event.preventDefault();
   try {
-    await UserService.updateUser(selectedUser.UserID, selectedUser);
-    setIsEditModalOpen(false);
-    fetchUserDetails();
-    // notApprovedUsers(); // Refresh the user list after update
+    const response = await UserService.updateUser(
+      selectedUser.UserID,
+      selectedUser
+    );
+    if(response.status === 200){
+      const response = await UserService.getUser(selectedUser.UserID)
+      setUserDetails(response.data);
+      setRole(response.data.Role);
+      setIsEditModalOpen(false);
+    }
   } catch (error) {
     console.error("Error updating user:", error);
+    alert("Failed to update user details. Please try again.");
   }
 };
 
@@ -76,19 +84,20 @@ const handleInputChange = (e) => {
 
   const fetchUserDetails = async () => {
     try {
-      const response = AuthService.getCurrentUser();
-      setUserDetails(response);
-      setRole(response.roles);
-      console.log('User Details:', response);
-      if (!response) { 
+      const userId = AuthService.getCurrentUser().id;
+      const response = await UserService.getUser(userId)
+      setUserDetails(response.data);
+      setRole(response.data.Role);
+      console.log("User Details:", response);
+      if (!response) {
         setIsUnauthorized(true);
-        navigate('/login');
+        navigate("/login");
       }
       setLoading(false);
     } catch (error) {
       if (error.response) {
         setIsUnauthorized(true);
-        navigate('/login');
+        navigate("/login");
       } else {
         console.error("Error fetching user details:", error);
       }
@@ -198,19 +207,19 @@ const handleInputChange = (e) => {
                       className="text-sm font-medium truncate text-gray-300"
                       role="none"
                     >
-                      {userDetails.roles}
+                      {userDetails.Role}
                     </p>
                     <p
                       className="text-sm text-white"
                       role="none"
                     >
-                      {userDetails.firstName} {userDetails.lastName}
+                      {userDetails.FirstName} {userDetails.LastName}
                     </p>
                     <p
                       className="text-sm font-medium truncate text-gray-300"
                       role="none"
                     >
-                      {userDetails.email}
+                      {userDetails.Email}
                     </p>
                   </div>
                   <ul className="py-1" role="none">
@@ -219,7 +228,7 @@ const handleInputChange = (e) => {
                         href="#"
                         className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-600 hover:text-white"
                         role="menuitem"
-                        onClick={() => openEditModal(userDetails.id)}
+                        onClick={() => openEditModal(userDetails.UserID)}
                       >
                         Profile
                       </a>
@@ -304,7 +313,7 @@ const handleInputChange = (e) => {
                   <path d="M16.975 11H10V4.025a1 1 0 0 0-1.066-.998 8.5 8.5 0 1 0 9.039 9.039.999.999 0 0 0-1-1.066h.002Z" />
                   <path d="M12.5 0c-.157 0-.311.01-.565.027A1 1 0 0 0 11 1.02V10h8.975a1 1 0 0 0 1-.935c.013-.188.028-.374.028-.565A8.51 8.51 0 0 0 12.5 0Z" />
                 </svg>
-                <span className="ms-3">Pending Approvals</span>
+                <span className="ms-3">Student List</span>
               </a>
             </li>
             <li>

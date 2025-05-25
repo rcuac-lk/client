@@ -42,11 +42,15 @@ const Dashboard = () => {
         selectedUser.UserID,
         selectedUser
       );
-      console.log("User Updated:", response);
-      setIsEditModalOpen(false);
-      // notApprovedUsers(); // Refresh the user list after update
+      if(response.status === 200){
+        const response = await UserService.getUser(selectedUser.UserID)
+        setUserDetails(response.data);
+        setRole(response.data.Role);
+        setIsEditModalOpen(false);
+      }
     } catch (error) {
       console.error("Error updating user:", error);
+      alert("Failed to update user details. Please try again.");
     }
   };
 
@@ -77,40 +81,7 @@ const Dashboard = () => {
     }
   };
 
-  const fetchUserDetails = async () => {
-    try {
-      const response = AuthService.getCurrentUser();
-      setUserDetails(response);
-      setRole(response.roles);
-      console.log("User Details:", response);
-      if (!response) {
-        setIsUnauthorized(true);
-        navigate("/login");
-      }
-      setLoading(false);
-    } catch (error) {
-      if (error.response) {
-        setIsUnauthorized(true);
-        navigate("/login");
-      } else {
-        console.error("Error fetching user details:", error);
-      }
-      setLoading(false);
-    }
-  };
-
-  // const notApprovedUsers = async () => {
-  //   try {
-  //     const response = await UserService.notApprovedUsers();
-  //     console.log('Not Approved Users:', response.data[0]);
-  //   } catch (error) {
-  //     console.error("Error fetching not approved users:", error);
-  //   }
-  // };
-
   useEffect(() => {
-    // notApprovedUsers();
-
     const handleOutsideClick = (event) => {
       if (
         isUserMenuOpen &&
@@ -129,6 +100,29 @@ const Dashboard = () => {
       document.removeEventListener("mousedown", handleOutsideClick);
     };
   }, [isUserMenuOpen]);
+
+  const fetchUserDetails = async () => {
+    try {
+      const userId = AuthService.getCurrentUser().id;
+      const response = await UserService.getUser(userId)
+      setUserDetails(response.data);
+      setRole(response.data.Role);
+      console.log("User Details:", response);
+      if (!response) {
+        setIsUnauthorized(true);
+        navigate("/login");
+      }
+      setLoading(false);
+    } catch (error) {
+      if (error.response) {
+        setIsUnauthorized(true);
+        navigate("/login");
+      } else {
+        console.error("Error fetching user details:", error);
+      }
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchUserDetails();
@@ -211,16 +205,16 @@ const Dashboard = () => {
                       className="text-sm font-medium truncate text-gray-300"
                       role="none"
                     >
-                      {userDetails.roles}
+                      {userDetails.Role}
                     </p>
                     <p className="text-sm text-white" role="none">
-                      {userDetails.firstName} {userDetails.lastName}
+                      {userDetails.FirstName} {userDetails.LastName}
                     </p>
                     <p
                       className="text-sm font-medium truncate text-gray-300"
                       role="none"
                     >
-                      {userDetails.email}
+                      {userDetails.Email}
                     </p>
                   </div>
                   <ul className="py-1" role="none">
@@ -229,7 +223,7 @@ const Dashboard = () => {
                         href="#"
                         className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-600 hover:text-white"
                         role="menuitem"
-                        onClick={() => openEditModal(userDetails.id)}
+                        onClick={() => openEditModal(userDetails.UserID)}
                       >
                         Profile
                       </a>
@@ -312,7 +306,7 @@ const Dashboard = () => {
                 >
                   <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="ms-3">Pending Approvals</span>
+                <span className="ms-3">Student List</span>
               </a>
             </li>
             <li>

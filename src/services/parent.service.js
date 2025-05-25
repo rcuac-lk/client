@@ -23,11 +23,16 @@ const getStudents = (id) => {
   return api.get(API_URL + "parent/getStudents/" + id, { headers: authHeader() });
 }
 
-const UserService = {
+const updateStudent = (id, data) => {
+  return api.post(API_URL + "parent/updateStudent/" + id, data, { headers: authHeader() })
+}
+
+const ParentService = {
   getUser,
   searchUsers,
   addStudent,
-  getStudents
+  getStudents,
+  updateStudent
 };
 
-export default UserService;
+export default ParentService;

@@ -85,6 +85,14 @@ const updateStudent = (id, data) => {
   return api.post(API_URL + "users/updateStudent/" + id, data, { headers: authHeader() })
 }
 
+const approveStudent = (id) => {
+  return api.put(API_URL + "users/approveStudent/" + id, { headers: authHeader() });
+}
+
+const rejectStudent = (id) => {
+  return api.put(API_URL + "users/deactivateStudent/" + id, { headers: authHeader() });
+}
+
 const UserService = {
   notApprovedUsers,
   getAllUsers,
@@ -103,7 +111,9 @@ const UserService = {
   markTiming,
   getAllStudents,
   getStudentById,
-  updateStudent
+  updateStudent,
+  approveStudent,
+  rejectStudent
 };
 
 export default UserService;

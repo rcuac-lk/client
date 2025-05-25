@@ -127,13 +127,7 @@ const PendingApprovalsComponent = (props) => {
 
     const handleApprove = async () => {
         try {
-            if (isAdmin) {
-                await UserService.approveUser(selectedUser.UserID);
-            } else if (isManager) {
-                await ManagerService.approveUser(selectedUser.UserID);
-            } else if (isCoach) {
-                await CoachService.approveUser(selectedUser.UserID);
-            }
+            await UserService.approveStudent(selectedUser.StudentID);
             closeConfirmModal();
             notApprovedUsers();
         } catch (error) {
@@ -143,13 +137,7 @@ const PendingApprovalsComponent = (props) => {
 
     const handleReject = async () => {
         try {
-            if (isAdmin) {
-                await UserService.rejectUser(selectedUser.UserID);
-            } else if (isManager) {
-                await ManagerService.rejectUser(selectedUser.UserID);
-            } else if (isCoach) {
-                await CoachService.rejectUser(selectedUser.UserID);
-            }
+            await UserService.rejectStudent(selectedUser.StudentID);
             closeRejectModal();
             notApprovedUsers();
         } catch (error) {

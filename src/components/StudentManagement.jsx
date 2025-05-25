@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ParentService from '../services/parent.service';
 import AuthService from '../services/auth.service';
-import UserService from '../services/parent.service';
+import UserService from '../services/user.service';
 
 const StudentManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,18 +34,39 @@ const StudentManagement = () => {
 
   const openEditModal = async (id) => {
     try {
-      const response = await UserService.getStudentById(id);
-      setSelectedStudent(response.data);
-      // Initialize form data with the student's existing data
-      setFormData({
-        admissionNumber: response.data.AdmissionNumber || '',
-        firstName: response.data.FirstName || '',
-        lastName: response.data.LastName || '',
-        dateOfBirth: response.data.DOB ? new Date(response.data.DOB).toISOString().split('T')[0] : ''
-      });
+      // First set the modal to open and initialize with existing data
       setIsEditModalOpen(true);
+      
+      // If we already have the student data, use it
+      if (selectedStudent) {
+        setFormData({
+          admissionNumber: selectedStudent.AdmissionNumber || '',
+          firstName: selectedStudent.FirstName || '',
+          lastName: selectedStudent.LastName || '',
+          dateOfBirth: selectedStudent.DOB ? new Date(selectedStudent.DOB).toISOString().split('T')[0] : ''
+        });
+        return;
+      }
+
+      // If we don't have the data, fetch it
+      const response = await UserService.getStudentById(id);
+      if (response && response.data) {
+        setSelectedStudent(response.data);
+        setFormData({
+          admissionNumber: response.data.AdmissionNumber || '',
+          firstName: response.data.FirstName || '',
+          lastName: response.data.LastName || '',
+          dateOfBirth: response.data.DOB ? new Date(response.data.DOB).toISOString().split('T')[0] : ''
+        });
+      }
     } catch (error) {
       console.error("Error fetching user details:", error);
+      // Close the modal if there's an error
+      setIsEditModalOpen(false);
+      // Show error message to user
+      setFormErrors({
+        submit: 'Failed to load student details. Please try again.'
+      });
     }
   };
 
@@ -161,11 +182,10 @@ const StudentManagement = () => {
         lastName: formData.lastName.trim(),
         dateOfBirth: formData.dateOfBirth
       };
+
+      const response = await ParentService.updateStudent(selectedStudent.StudentID, data);
       
-      console.log('Updating student:', selectedStudent.StudentID, data);
-      const response = await UserService.updateStudent(selectedStudent.StudentID, data);
-      
-      if (response && response.data) {
+      if (response.status === 200) {
         setIsEditModalOpen(false);
         setFormData({
           admissionNumber: '',
@@ -200,6 +220,16 @@ const StudentManagement = () => {
     }
   };
 
+  const handleEditClick = () => {
+    if (selectedStudent && selectedStudent.StudentID) {
+      openEditModal(selectedStudent.StudentID);
+    } else {
+      setFormErrors({
+        submit: 'No student selected'
+      });
+    }
+  };
+
   return (
     <div className="relative overflow-x-auto mt-16 flex">
       {/* Main Content Area - 80% width */}
@@ -230,9 +260,7 @@ const StudentManagement = () => {
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-semibold">Student Details</h3>
                 <button
-                  onClick={() => {
-                    openEditModal(selectedStudent.StudentID);
-                  }}
+                  onClick={handleEditClick}
                   className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                 >
                   Edit Profile

@@ -73,6 +73,18 @@ const markTiming = (data) => {
   return api.post(API_URL + "users/markTiming", data, { headers: authHeader() });
 }
 
+const getAllStudents = () => {
+  return api.get(API_URL + "users/getAllStudents", { headers: authHeader() });
+}
+
+const getStudentById = (id) => {
+  return api.get(API_URL + "users/getStudentById/" + id, { headers: authHeader() });
+}
+
+const updateStudent = (id, data) => {
+  return api.post(API_URL + "users/updateStudent/" + id, data, { headers: authHeader() })
+}
+
 const UserService = {
   notApprovedUsers,
   getAllUsers,
@@ -88,7 +100,10 @@ const UserService = {
   getEventLengths,
   getAttendancedata,
   markAttendance,
-  markTiming
+  markTiming,
+  getAllStudents,
+  getStudentById,
+  updateStudent
 };
 
 export default UserService;

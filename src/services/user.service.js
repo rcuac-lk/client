@@ -32,6 +32,10 @@ const updateUser = (id, data) => {
   return api.put(API_URL + "users/updateProfile/" + id, data, { headers: authHeader() });
 }
 
+const updatePassword = (id, oldPassword, newPassword) => {
+  return api.put(API_URL + "users/updatePassword/" + id, { oldPassword, newPassword }, { headers: authHeader() });
+}
+
 const searchUsers = (search, role) => {
   const params = {};
     if (search) params.search = search;
@@ -100,6 +104,7 @@ const UserService = {
   approveUser,
   approvedUsers,
   updateUser,
+  updatePassword,
   searchUsers,
   rejectUser,
   ageGroups,

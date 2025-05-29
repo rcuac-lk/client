@@ -189,12 +189,30 @@ const StudentManagement = () => {
       return;
     }
 
+    const changes = [];
+    if (formData.admissionNumber.trim() !== selectedStudent.AdmissionNumber.toString().trim()) {
+      changes.push(`Admission Number: ${selectedStudent.AdmissionNumber} → ${formData.admissionNumber.trim()}`);
+    }
+    if (formData.firstName.trim() !== selectedStudent.FirstName.trim()) {
+      changes.push(`First Name: ${selectedStudent.FirstName} → ${formData.firstName.trim()}`);
+    }
+    if (formData.lastName.trim() !== selectedStudent.LastName.trim()) {
+      changes.push(`Last Name: ${selectedStudent.LastName} → ${formData.lastName.trim()}`);
+    }
+    if (formData.dateOfBirth !== new Date(selectedStudent.DOB).toISOString().split('T')[0]) {
+      changes.push(`Date of Birth: ${new Date(selectedStudent.DOB).toLocaleDateString()} → ${new Date(formData.dateOfBirth).toLocaleDateString()}`);
+    }
+
+    const changesSummary = changes.join('\n');
+    console.log('Changes made:', changesSummary);
+
     try {
       const data = {
         admissionNumber: String(formData.admissionNumber).trim(),
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
-        dateOfBirth: formData.dateOfBirth
+        dateOfBirth: formData.dateOfBirth,
+        comment: changesSummary
       };
 
       const response = await ParentService.updateStudent(selectedStudent.StudentID, data);

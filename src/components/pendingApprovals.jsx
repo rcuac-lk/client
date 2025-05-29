@@ -208,6 +208,7 @@ const PendingApprovalsComponent = (props) => {
         try {
             const response = await UserService.getAllStudents();
             setUsers(response.data);
+            console.log("student data:" + response.data)
         } catch (error) {
             console.error("Error fetching not approved users:", error);
         }
@@ -311,6 +312,12 @@ const PendingApprovalsComponent = (props) => {
                                         <div className="font-normal text-gray-500">
                                             {user.Email}
                                         </div>
+                                        {user.Comment && (
+                                            <div className="mt-2 text-sm text-blue-400">
+                                                <span className="font-medium">Profile Updated!</span>
+                                                {/* <p className="whitespace-pre-line">{user.Comment}</p> */}
+                                            </div>
+                                        )}
                                     </div>
                                 </th>
                                 <td className="px-6 py-4">{user.AgeCategory}</td>
@@ -368,6 +375,12 @@ const PendingApprovalsComponent = (props) => {
                                         <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                                     </svg>
                                     <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to approve this user?</h3>
+                                    {selectedUser.Comment && (
+                                        <div className="mb-5 p-4 text-sm text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400">
+                                            <div className="font-medium">Profile Updates:</div>
+                                            <p className="mt-1 whitespace-pre-line">{selectedUser.Comment}</p>
+                                        </div>
+                                    )}
                                     <button type="button" onClick={handleApprove} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                         Yes, approve
                                     </button>

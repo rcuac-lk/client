@@ -126,13 +126,9 @@ const reportHandlers = {
     filterData: (data, filters) => {
       const { searchQuery, dateRange } = filters;
       return data.filter(item => {
-        // Text search filter
+        // Text search filter - only search in studentName
         const matchesSearch = searchQuery === "" || 
-          item.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.session.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (item.recordedBy && item.recordedBy.toLowerCase().includes(searchQuery.toLowerCase())) ||
-          (item.ageGroup && item.ageGroup.toLowerCase().includes(searchQuery.toLowerCase()));
+          item.studentName.toLowerCase().includes(searchQuery.toLowerCase());
 
         // Date range filter
         const itemDate = new Date(item.date);

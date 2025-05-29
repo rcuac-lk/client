@@ -73,7 +73,7 @@ const StudentManagement = () => {
   const validateForm = () => {
     const errors = {};
     // Check if values exist and are not empty strings
-    if (!formData.admissionNumber || Number(formData.admissionNumber) === '') {
+    if (!formData.admissionNumber || String(formData.admissionNumber).trim() === '') {
       errors.admissionNumber = 'Admission Number is required';
     }
     if (!formData.firstName || formData.firstName.trim() === '') {
@@ -126,7 +126,7 @@ const StudentManagement = () => {
     try {
       const parentId = AuthService.getCurrentUser();
       const data = {
-        admissionNumber: Number(formData.admissionNumber),
+        admissionNumber: String(formData.admissionNumber).trim(),
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         dateOfBirth: formData.dateOfBirth,
@@ -173,9 +173,9 @@ const StudentManagement = () => {
     e.preventDefault();
     
     const hasChanges = 
-      Number(formData.admissionNumber) !== Number(selectedStudent.AdmissionNumber) ||
-      String(formData.firstName) !== String(selectedStudent.FirstName) ||
-      String(formData.lastName) !== String(selectedStudent.LastName) ||
+      formData.admissionNumber.trim() !== selectedStudent.AdmissionNumber.toString().trim() ||
+      formData.firstName.trim() !== selectedStudent.FirstName.trim() ||
+      formData.lastName.trim() !== selectedStudent.LastName.trim() ||
       formData.dateOfBirth !== new Date(selectedStudent.DOB).toISOString().split('T')[0];
 
     if (!hasChanges) {
@@ -191,9 +191,9 @@ const StudentManagement = () => {
 
     try {
       const data = {
-        admissionNumber: Number(formData.admissionNumber),
-        firstName: String(formData.firstName).trim(),
-        lastName: String(formData.lastName).trim(),
+        admissionNumber: String(formData.admissionNumber).trim(),
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
         dateOfBirth: formData.dateOfBirth
       };
 

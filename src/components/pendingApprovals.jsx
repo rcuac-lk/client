@@ -33,7 +33,7 @@ const PendingApprovalsComponent = (props) => {
 
     const validateForm = () => {
         const errors = {};
-        if (!Number(formData.admissionNumber)) {
+        if (!String(formData.admissionNumber).trim()) {
             errors.admissionNumber = 'Admission Number is required';
         }
         if (!formData.firstName.trim()) {
@@ -167,7 +167,7 @@ const PendingApprovalsComponent = (props) => {
 
         try {
             const data = {
-                admissionNumber: Number(formData.admissionNumber),
+                admissionNumber: String(formData.admissionNumber).trim(),
                 firstName: formData.firstName.trim(),
                 lastName: formData.lastName.trim(),
                 dateOfBirth: formData.dateOfBirth

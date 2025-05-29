@@ -73,7 +73,7 @@ const StudentManagement = () => {
   const validateForm = () => {
     const errors = {};
     // Check if values exist and are not empty strings
-    if (!formData.admissionNumber || formData.admissionNumber.trim() === '') {
+    if (!formData.admissionNumber || Number(formData.admissionNumber) === '') {
       errors.admissionNumber = 'Admission Number is required';
     }
     if (!formData.firstName || formData.firstName.trim() === '') {
@@ -126,7 +126,7 @@ const StudentManagement = () => {
     try {
       const parentId = AuthService.getCurrentUser();
       const data = {
-        admissionNumber: formData.admissionNumber.trim(),
+        admissionNumber: Number(formData.admissionNumber),
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         dateOfBirth: formData.dateOfBirth,
@@ -173,9 +173,9 @@ const StudentManagement = () => {
     e.preventDefault();
     
     const hasChanges = 
-      formData.admissionNumber !== selectedStudent.AdmissionNumber ||
-      formData.firstName !== selectedStudent.FirstName ||
-      formData.lastName !== selectedStudent.LastName ||
+      Number(formData.admissionNumber) !== Number(selectedStudent.AdmissionNumber) ||
+      String(formData.firstName) !== String(selectedStudent.FirstName) ||
+      String(formData.lastName) !== String(selectedStudent.LastName) ||
       formData.dateOfBirth !== new Date(selectedStudent.DOB).toISOString().split('T')[0];
 
     if (!hasChanges) {
@@ -191,15 +191,24 @@ const StudentManagement = () => {
 
     try {
       const data = {
-        admissionNumber: formData.admissionNumber.trim(),
-        firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim(),
+        admissionNumber: Number(formData.admissionNumber),
+        firstName: String(formData.firstName).trim(),
+        lastName: String(formData.lastName).trim(),
         dateOfBirth: formData.dateOfBirth
       };
 
       const response = await ParentService.updateStudent(selectedStudent.StudentID, data);
       
       if (response.status === 200) {
+        // Update the selected student with new data
+        setSelectedStudent(prev => ({
+          ...prev,
+          AdmissionNumber: data.admissionNumber,
+          FirstName: data.firstName,
+          LastName: data.lastName,
+          DOB: data.dateOfBirth
+        }));
+        
         setIsEditModalOpen(false);
         setFormData({
           admissionNumber: '',

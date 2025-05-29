@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/static/css/main.90f0ba0e.css",
-    "main.js": "/static/js/main.ea541876.js",
+    "main.js": "/static/js/main.4fe07557.js",
     "static/js/453.419a5d54.chunk.js": "/static/js/453.419a5d54.chunk.js",
     "static/media/hero-bg_1.jpg": "/static/media/hero-bg_1.71862ca7bd6ab1ea76f9.jpg",
     "static/media/water-polo.jpg": "/static/media/water-polo.30e124be0ee6550ea62f.jpg",
@@ -11,11 +11,11 @@
     "static/media/hero-bg.jpg": "/static/media/hero-bg.ae202d6f64cf4d61fea1.jpg",
     "index.html": "/index.html",
     "main.90f0ba0e.css.map": "/static/css/main.90f0ba0e.css.map",
-    "main.ea541876.js.map": "/static/js/main.ea541876.js.map",
+    "main.4fe07557.js.map": "/static/js/main.4fe07557.js.map",
     "453.419a5d54.chunk.js.map": "/static/js/453.419a5d54.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.90f0ba0e.css",
-    "static/js/main.ea541876.js"
+    "static/js/main.4fe07557.js"
   ]
 }

@@ -272,124 +272,144 @@ const StudentManagement = () => {
   };
 
   return (
-    <div className="relative overflow-x-auto mt-16 flex">
-      {/* Main Content Area - 80% width */}
-      <div className="w-4/5 p-4">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold text-gray-900">Student Management</h2>
-          <button
-            onClick={() => {
-              setFormData({
-                admissionNumber: '',
-                firstName: '',
-                lastName: '',
-                dateOfBirth: ''
-              });
-              setFormErrors({});
-              setIsModalOpen(true);
-            }}
-            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-          >
-            Add Student
-          </button>
-        </div>
-
-        {/* Student Details Area */}
-        <div className="bg-white rounded-lg shadow p-6 h-[calc(100vh-200px)]">
-          {selectedStudent ? (
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold">Student Details</h3>
-                <button
-                  onClick={handleEditClick}
-                  className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                >
-                  Edit Profile
-                </button>
-              </div>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">Admission Number</h4>
-                    <p className="mt-1 text-lg">{selectedStudent.AdmissionNumber}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">Date of Birth</h4>
-                    <p className="mt-1 text-lg">{new Date(selectedStudent.DOB).toLocaleDateString()}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">First Name</h4>
-                    <p className="mt-1 text-lg">{selectedStudent.FirstName}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">Last Name</h4>
-                    <p className="mt-1 text-lg">{selectedStudent.LastName}</p>
-                  </div>
-                </div>
-              </div>
+    <div className="relative overflow-x-auto mt-16">
+      {/* Main Content Area - Responsive layout */}
+      <div className="flex flex-col lg:flex-row">
+        {/* Student List Panel - Full width on mobile, 1/4 on desktop */}
+        <div className="w-full lg:w-1/4 bg-white border-b lg:border-b-0 lg:border-r p-4">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold">Students</h3>
+            <button
+              onClick={() => {
+                setFormData({
+                  admissionNumber: '',
+                  firstName: '',
+                  lastName: '',
+                  dateOfBirth: ''
+                });
+                setFormErrors({});
+                setIsModalOpen(true);
+              }}
+              className="lg:hidden text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-3 py-1.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            >
+              Add Student
+            </button>
+          </div>
+          {students.length === 0 ? (
+            <div className="text-center">
+              <p className="text-gray-500 mb-2">No students added yet</p>
+              <p className="text-sm text-gray-400">Click "Add Student" to get started</p>
             </div>
           ) : (
-            <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500">Select a student to view details</p>
+            <div className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto">
+              {students.map((student) => (
+                <div
+                  key={student.StudentID}
+                  onClick={() => setSelectedStudent(student)}
+                  className={`border rounded-lg p-3 cursor-pointer transition-colors relative ${
+                    selectedStudent?.StudentID === student.StudentID
+                      ? 'bg-blue-50 border-blue-200'
+                      : 'hover:bg-gray-50'
+                  }`}
+                >
+                  {selectedStudent?.StudentID === student.StudentID && (
+                    <>
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-l-lg"></div>
+                      <div className="absolute right-3 top-3">
+                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    </>
+                  )}
+                  <div className="flex flex-col">
+                    <div className="flex items-center justify-between pr-8">
+                      <h4 className="font-medium text-gray-900 truncate max-w-[150px]">
+                        {student.FirstName} {student.LastName}
+                      </h4>
+                      {!student.Approved && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                          Pending
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                      <p className="text-sm text-gray-600 truncate">
+                        Admission: {student.AdmissionNumber}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        DOB: {new Date(student.DOB).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
-      </div>
 
-      {/* Student List Panel - 20% width */}
-      <div className="w-1/5 bg-white border-l p-4">
-        <h3 className="text-xl font-semibold mb-4">Students</h3>
-        {students.length === 0 ? (
-          <div className="text-center">
-            <p className="text-gray-500 mb-2">No students added yet</p>
-            <p className="text-sm text-gray-400">Click "Add Student" to get started</p>
+        {/* Student Details Area - Full width on mobile, 3/4 on desktop */}
+        <div className="w-full lg:w-3/4 p-4">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold text-gray-900">Student Management</h2>
+            <button
+              onClick={() => {
+                setFormData({
+                  admissionNumber: '',
+                  firstName: '',
+                  lastName: '',
+                  dateOfBirth: ''
+                });
+                setFormErrors({});
+                setIsModalOpen(true);
+              }}
+              className="hidden lg:block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            >
+              Add Student
+            </button>
           </div>
-        ) : (
-          <div className="space-y-2">
-            {students.map((student) => (
-              <div
-                key={student._id}
-                onClick={() => setSelectedStudent(student)}
-                className={`border rounded-lg p-3 cursor-pointer transition-colors relative ${
-                  selectedStudent?._id === student._id
-                    ? 'bg-blue-50 border-blue-200'
-                    : 'hover:bg-gray-50'
-                }`}
-              >
-                {selectedStudent?._id === student._id && (
-                  <>
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-l-lg"></div>
-                    <div className="absolute right-3 top-3">
-                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
+
+          {/* Student Details Content */}
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 h-[calc(100vh-200px)] overflow-y-auto">
+            {selectedStudent ? (
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold">Student Details</h3>
+                  <button
+                    onClick={handleEditClick}
+                    className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  >
+                    Edit Profile
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">Admission Number</h4>
+                      <p className="mt-1 text-lg break-words">{selectedStudent.AdmissionNumber}</p>
                     </div>
-                  </>
-                )}
-                <div className="flex flex-col">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-gray-900">
-                      {student.FirstName} {student.LastName}
-                    </h4>
-                    {!student.Approved && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                        Pending Approval
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-1 flex items-center justify-between">
-                    <p className="text-sm text-gray-600">
-                      Admission: {student.AdmissionNumber}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      DOB: {new Date(student.DOB).toLocaleDateString()}
-                    </p>
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">Date of Birth</h4>
+                      <p className="mt-1 text-lg">{new Date(selectedStudent.DOB).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">First Name</h4>
+                      <p className="mt-1 text-lg break-words">{selectedStudent.FirstName}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">Last Name</h4>
+                      <p className="mt-1 text-lg break-words">{selectedStudent.LastName}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            ))}
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-gray-500">Select a student to view details</p>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Add Student Modal */}

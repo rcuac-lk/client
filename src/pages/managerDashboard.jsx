@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import AuthService from "../services/auth.service";
 import UserService from "../services/user.service";
 import UserListComponent from "../components/userList";
-import PendingApprovalsComponent from "../components/pendingApprovals";
+import StudentListComponent from "../components/studentList";
 import Attendance from "../components/attendance";
 import Timing from "../components/timing";
 import Reports from "../components/reports";
@@ -493,7 +493,7 @@ const ManagerDashboard = () => {
             <UserListComponent role={role} /> // Replace with actual User List component or content
           )}
           {selectedSection === "pendingApprovals" && (
-            <PendingApprovalsComponent role={role} /> // Replace with actual Pending Approvals component or content
+            <StudentListComponent role={role} /> // Replace with actual Pending Approvals component or content
           )}
           {selectedSection === "attendance" && <Attendance />}
           {selectedSection === "timing" && <Timing />}

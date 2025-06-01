@@ -3,7 +3,7 @@ import UserService from '../services/user.service';
 import ManagerService from '../services/manager.service';
 import CoachService from '../services/coach.service';
 
-const PendingApprovalsComponent = (props) => {
+const StudentListComponent = (props) => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
@@ -533,4 +533,4 @@ const PendingApprovalsComponent = (props) => {
     );
 };
 
-export default PendingApprovalsComponent;
+export default StudentListComponent;

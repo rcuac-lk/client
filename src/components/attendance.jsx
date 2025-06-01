@@ -306,7 +306,6 @@ const UserListComponent = () => {
               onChange={(e) => {
                 setSessionFilter(e.target.value);
                 const selected = sessions.find(s => String(s.SessionID) === String(e.target.value));
-                console.log("[AT7010] Selected Session [" + selected + "]");
                 setCustomSession(selected ? selected.SessionName : "");
               }}
               className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
@@ -343,6 +342,11 @@ const UserListComponent = () => {
                     <div className="text-base font-semibold">
                       {student.FirstName} {student.LastName}
                     </div>
+                    {student.bestTiming && (
+                      <div className="text-sm text-gray-300">
+                        Best Time: {student.bestTiming}
+                      </div>
+                    )}
                   </div>
                 </th>
                 <td className="px-6 py-4">{student.AgeCategory}</td>

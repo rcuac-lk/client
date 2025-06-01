@@ -288,6 +288,12 @@ const Reports = () => {
     setFilteredData([]);
     setError(null);
     
+    // Autofill date range with today for Attendance report
+    if (reportName === 'Attendance') {
+      const today = new Date().toISOString().split('T')[0];
+      setDateRange({ start: today, end: today });
+    }
+    
     if (!reportName) return;
     
     setIsLoading(true);
@@ -389,7 +395,7 @@ const Reports = () => {
             <select
               value={selectedReport}
               onChange={(e) => handleReportChange(e.target.value)}
-              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-72 min-w-[18rem]"
             >
               <option value="">Select Report</option>
               {getAvailableReports().map((report) => (
@@ -397,19 +403,21 @@ const Reports = () => {
               ))}
             </select>
 
-            {/* Search Input */}
+            {/* Search Input - visible only for Attendance report */}
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="Search..."
+              placeholder="Search by name"
               disabled={!selectedReport}
+              style={{ display: selectedReport === 'Attendance' ? 'block' : 'none' }}
             />
 
             {/* Date Range Filter */}
             {selectedReport && reportDefinitions[selectedReport]?.requiresDateRange && (
-              <div className="flex space-x-2">
+              <div className="flex space-x-2 items-center">
+                <span className="text-gray-200 text-sm">From</span>
                 <input
                   type="date"
                   value={dateRange.start}
@@ -417,6 +425,7 @@ const Reports = () => {
                   className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   placeholder="Start Date"
                 />
+                <span className="text-gray-200 text-sm">To</span>
                 <input
                   type="date"
                   value={dateRange.end}

@@ -14,6 +14,7 @@ const ParentDashboard = () => {
   const [isUnauthorized, setIsUnauthorized] = useState(false);
   const navigate = useNavigate();
   const [selectedSection, setSelectedSection] = useState("dashboard");
+  const [role, setRole] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -95,6 +96,7 @@ const ParentDashboard = () => {
       if (response.status === 200) {
         const response = await ParentService.getUser(selectedUser.UserID);
         setUserDetails(response.data);
+        setRole(response.data.Role);
         setIsEditModalOpen(false);
       }
     } catch (error) {
@@ -135,6 +137,7 @@ const ParentDashboard = () => {
       const userId = AuthService.getCurrentUser().id;
       const response = await ParentService.getUser(userId);
       setUserDetails(response.data);
+      setRole(response.data.Role);
       console.log("User Details:", response);
       if (!response) {
         setIsUnauthorized(true);
@@ -404,7 +407,7 @@ const ParentDashboard = () => {
               <StudentManagement />
             </>
           )}
-          {selectedSection === "reports" && <Reports />}
+          {selectedSection === "reports" && <Reports role={role} />}
         </div>
       </div>
 

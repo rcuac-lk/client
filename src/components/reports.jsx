@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AuthService from "../services/auth.service";
 import UserService from "../services/user.service";
+import * as XLSX from 'xlsx';
 
 // Report Definitions
 const reportDefinitions = {
@@ -25,7 +26,9 @@ const reportDefinitions = {
     description: "View student timing records",
     columns: [
       { key: "studentName", label: "Student Name", type: "text" },
+      { key: "ageGroup", label: "Age Group", type: "text" },
       { key: "event", label: "Event", type: "text" },
+      { key: "distance", label: "Distance", type: "text" },
       { key: "time", label: "Time", type: "text" },
       { key: "date", label: "Date", type: "date" },
       { key: "session", label: "Session", type: "text" },
@@ -72,52 +75,27 @@ const reportHandlers = {
         const startDate = dateRange.start || new Date().toISOString().split('T')[0];
         const endDate = dateRange.end || new Date().toISOString().split('T')[0];
         
-        // Get session data first
-        const sessionResponse = await UserService.getSessionData();
-        const sessions = sessionResponse.data.sessions;
+        const user = await AuthService.getCurrentUser();
+        const response = await UserService.getAttendancedataForReport(startDate, endDate, user.id);
         
-        if (!sessions || sessions.length === 0) {
-          console.error("No sessions available");
-          return [];
-        }
-        
-        // Get age groups
-        const ageResponse = await UserService.ageGroups();
-        const ageCategories = ageResponse.data.data;
-        
-        // Use the first session and all age groups by default
-        const sessionId = sessions[0].SessionID;
-        const ageFilter = ""; // Empty string means all age groups
-        
-        // Collect attendance data for each day in the date range
-        const allAttendanceData = [];
-        const currentDate = new Date(startDate);
-        const endDateObj = new Date(endDate);
-        
-        while (currentDate <= endDateObj) {
-          const dateStr = currentDate.toISOString().split('T')[0];
-          const response = await UserService.getAttendancedata(dateStr, sessionId, ageFilter);
-          
-          if (response.data && response.data.attendanceData) {
-            // Transform the data to match our report format
-            const dayAttendance = response.data.attendanceData.map(student => ({
+        if (response.data && response.data.attendanceData) {
+          // Transform the data to match our report format
+          const attendanceData = response.data.attendanceData.flatMap(student => 
+            student.attendanceRecords.map(record => ({
               id: student.UserID,
               studentName: `${student.FirstName} ${student.LastName}`,
-              date: dateStr,
-              status: student.LastUpdate || "Not Marked",
-              session: sessions.find(s => s.SessionID === sessionId)?.SessionName || "Unknown",
-              recordedBy: student.LastUpdateBy || "",
+              date: new Date(record.date).toISOString().split('T')[0],
+              status: record.status,
+              session: record.sessionName,
+              recordedBy: record.markedBy,
               ageGroup: student.AgeCategory
-            }));
-            
-            allAttendanceData.push(...dayAttendance);
-          }
+            }))
+          );
           
-          // Move to next day
-          currentDate.setDate(currentDate.getDate() + 1);
+          return attendanceData;
         }
         
-        return allAttendanceData;
+        return [];
       } catch (error) {
         console.error("Error fetching attendance report data:", error);
         return [];
@@ -125,52 +103,116 @@ const reportHandlers = {
     },
     filterData: (data, filters) => {
       const { searchQuery, dateRange } = filters;
-      return data.filter(item => {
-        // Text search filter - only search in studentName
-        const matchesSearch = searchQuery === "" || 
-          item.studentName.toLowerCase().includes(searchQuery.toLowerCase());
+      let filteredData = data;
 
-        // Date range filter
-        const itemDate = new Date(item.date);
-        const startDate = dateRange.start ? new Date(dateRange.start) : null;
-        const endDate = dateRange.end ? new Date(dateRange.end) : null;
+      // Text search filter - only search in studentName
+      if (searchQuery) {
+        filteredData = filteredData.filter(item => 
+          item.studentName.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
 
-        const matchesDate = (!startDate || itemDate >= startDate) && 
-                          (!endDate || itemDate <= endDate);
-                          
-        return matchesSearch && matchesDate;
-      });
+      // Date range filter
+      if (dateRange.start || dateRange.end) {
+        filteredData = filteredData.filter(item => {
+          const itemDate = new Date(item.date);
+          const startDate = dateRange.start ? new Date(dateRange.start) : null;
+          const endDate = dateRange.end ? new Date(dateRange.end) : null;
+
+          return (!startDate || itemDate >= startDate) && 
+                 (!endDate || itemDate <= endDate);
+        });
+      }
+
+      return filteredData;
     },
     getExportData: (data) => {
-      // Format data for export (CSV, PDF, etc.)
       return data.map(item => ({
-        "Student Name": item.studentName,
+        "Student Name": item.studentName || "",
         "Age Group": item.ageGroup || "",
-        "Date": item.date,
-        "Status": item.status,
-        "Session": item.session,
+        "Date": item.date || "",
+        "Status": item.status || "",
+        "Session": item.session || "",
         "Recorded By": item.recordedBy || ""
       }));
     }
   },
   
-  // Timing Report Handler (placeholder)
+  // Timing Report Handler
   Timing: {
     fetchData: async (dateRange) => {
-      // Placeholder for future implementation
-      return [];
+      try {
+        const startDate = dateRange.start || new Date().toISOString().split('T')[0];
+        const endDate = dateRange.end || new Date().toISOString().split('T')[0];
+        
+        const user = await AuthService.getCurrentUser();
+        const response = await UserService.getTimingDataForReport(startDate, endDate, user.id);
+        
+        if (response.data && response.data.performanceData) {
+          // Transform the data to match our report format
+          const timingData = response.data.performanceData.flatMap(student => 
+            student.performanceRecords.map(record => ({
+              id: student.UserID,
+              studentName: `${student.FirstName} ${student.LastName}`,
+              date: new Date(record.date).toISOString().split('T')[0],
+              event: record.event,
+              time: record.time,
+              distance: record.distance,
+              session: record.sessionName,
+              recordedBy: record.recordedBy,
+              ageGroup: student.AgeCategory
+            }))
+          );
+          
+          return timingData;
+        }
+        
+        return [];
+      } catch (error) {
+        console.error("Error fetching timing report data:", error);
+        return [];
+      }
     },
     filterData: (data, filters) => {
-      // Placeholder for future implementation
-      return data;
+      const { searchQuery, dateRange } = filters;
+      let filteredData = data;
+
+      // Text search filter - only search in studentName
+      if (searchQuery) {
+        filteredData = filteredData.filter(item => 
+          item.studentName.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+
+      // Date range filter
+      if (dateRange.start || dateRange.end) {
+        filteredData = filteredData.filter(item => {
+          const itemDate = new Date(item.date);
+          const startDate = dateRange.start ? new Date(dateRange.start) : null;
+          const endDate = dateRange.end ? new Date(dateRange.end) : null;
+
+          return (!startDate || itemDate >= startDate) && 
+                 (!endDate || itemDate <= endDate);
+        });
+      }
+
+      return filteredData;
     },
     getExportData: (data) => {
-      // Placeholder for future implementation
-      return data;
+      return data.map(item => ({
+        "Student Name": item.studentName || "",
+        "Age Group": item.ageGroup || "",
+        "Event": item.event || "",
+        "Distance": item.distance || "",
+        "Time": item.time || "",
+        "Date": item.date || "",
+        "Session": item.session || "",
+        "Recorded By": item.recordedBy || ""
+      }));
     }
   },
   
-  // Student Data Report Handler (placeholder)
+  // Student Data Report Handler
   "Student Data": {
     fetchData: async () => {
       // Placeholder for future implementation
@@ -181,12 +223,17 @@ const reportHandlers = {
       return data;
     },
     getExportData: (data) => {
-      // Placeholder for future implementation
-      return data;
+      return data.map(item => ({
+        "Name": item.name || "",
+        "Age Group": item.ageGroup || "",
+        "Parent Name": item.parentName || "",
+        "Contact": item.contact || "",
+        "Join Date": item.joinDate || ""
+      }));
     }
   },
   
-  // Activity Log Report Handler (placeholder)
+  // Activity Log Report Handler
   "Activity Log": {
     fetchData: async (dateRange) => {
       // Placeholder for future implementation
@@ -197,8 +244,12 @@ const reportHandlers = {
       return data;
     },
     getExportData: (data) => {
-      // Placeholder for future implementation
-      return data;
+      return data.map(item => ({
+        "Action": item.action || "",
+        "User": item.user || "",
+        "Timestamp": item.timestamp || "",
+        "Details": item.details || ""
+      }));
     }
   }
 };
@@ -214,13 +265,12 @@ const Reports = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Get user role on component mount
+  // Get user role and age categories on component mount
   useEffect(() => {
     const currentUser = AuthService.getCurrentUser();
     if (currentUser && currentUser.role) {
       setUserRole(currentUser.role);
     }
-    // If no user is found, we'll keep the default "Admin" role for testing
   }, []);
 
   // Get available reports based on user role
@@ -315,10 +365,17 @@ const Reports = () => {
       const handler = reportHandlers[selectedReport];
       if (handler) {
         const exportData = handler.getExportData(filteredData);
-        console.log('Export data:', exportData);
-        // In a real implementation, this would trigger a download
-        // For now, just log the data
-        alert('Export functionality would be implemented here');
+        
+        // Create worksheet
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        
+        // Create workbook
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, selectedReport);
+        
+        // Generate Excel file
+        const fileName = `${selectedReport}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(wb, fileName);
       }
     }
   };

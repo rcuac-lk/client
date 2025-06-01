@@ -497,7 +497,7 @@ const CoachDashboard = () => {
           )}
           {selectedSection === "attendance" && <Attendance />}
           {selectedSection === "timing" && <Timing />}
-          {selectedSection === "reports" && <Reports />}
+          {selectedSection === "reports" && <Reports role={role} />}
         </div>
       </div>
 

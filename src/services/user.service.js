@@ -97,6 +97,24 @@ const rejectStudent = (id) => {
   return api.put(API_URL + "users/deactivateStudent/" + id, { headers: authHeader() });
 }
 
+const getAttendancedataForReport = (startDate, endDate, id) => {
+  const encodedStartDate = encodeURIComponent(startDate);
+  const encodedEndDate = encodeURIComponent(endDate);
+  const encodedUserId = encodeURIComponent(id)
+  return api.get(`${API_URL}users/getAttendancedataForReport?startDate=${encodedStartDate}&endDate=${encodedEndDate}&userID=${encodedUserId}`, {
+    headers: authHeader()
+  });
+}
+
+const getTimingDataForReport = (startDate, endDate, id) => {
+  const encodedStartDate = encodeURIComponent(startDate);
+  const encodedEndDate = encodeURIComponent(endDate);
+  const encodedUserId = encodeURIComponent(id)
+  return api.get(`${API_URL}users/getTimingDataForReport?startDate=${encodedStartDate}&endDate=${encodedEndDate}&userID=${encodedUserId}`, {
+    headers: authHeader()
+  });
+}
+
 const UserService = {
   notApprovedUsers,
   getAllUsers,
@@ -118,7 +136,9 @@ const UserService = {
   getStudentById,
   updateStudent,
   approveStudent,
-  rejectStudent
+  rejectStudent,
+  getAttendancedataForReport,
+  getTimingDataForReport
 };
 
 export default UserService;

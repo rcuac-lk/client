@@ -290,8 +290,11 @@ const Reports = () => {
     
     // Autofill date range with today for Attendance report
     if (reportName === 'Attendance') {
-      const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
-      setDateRange({ start: today, end: today });
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      setDateRange({ start: `${year}-${month}-${day}`, end: `${year}-${month}-${day}` });
     }
     
     if (!reportName) return;

@@ -33,8 +33,11 @@ const UserListComponent = () => {
   }
 
   useEffect(() => {
-    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
-    setCustomDate(today);
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    setCustomDate(`${year}-${month}-${day}`);
   }, []);
   
   const getSessionData = async() => { 

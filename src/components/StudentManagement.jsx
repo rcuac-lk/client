@@ -43,7 +43,7 @@ const StudentManagement = () => {
           admissionNumber: selectedStudent.AdmissionNumber || '',
           firstName: selectedStudent.FirstName || '',
           lastName: selectedStudent.LastName || '',
-          dateOfBirth: selectedStudent.DOB ? new Date(selectedStudent.DOB).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : ''
+          dateOfBirth: selectedStudent.DOB ? new Date(selectedStudent.DOB).toISOString().split('T')[0] : ''
         });
         return;
       }
@@ -56,7 +56,7 @@ const StudentManagement = () => {
           admissionNumber: response.data.AdmissionNumber || '',
           firstName: response.data.FirstName || '',
           lastName: response.data.LastName || '',
-          dateOfBirth: response.data.DOB ? new Date(response.data.DOB).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : ''
+          dateOfBirth: response.data.DOB ? new Date(response.data.DOB).toISOString().split('T')[0] : ''
         });
       }
     } catch (error) {
@@ -176,7 +176,7 @@ const StudentManagement = () => {
       formData.admissionNumber.trim() !== selectedStudent.AdmissionNumber.toString().trim() ||
       formData.firstName.trim() !== selectedStudent.FirstName.trim() ||
       formData.lastName.trim() !== selectedStudent.LastName.trim() ||
-      formData.dateOfBirth !== new Date(selectedStudent.DOB).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+      formData.dateOfBirth !== new Date(selectedStudent.DOB).toISOString().split('T')[0];
 
     if (!hasChanges) {
       setFormErrors({
@@ -199,7 +199,7 @@ const StudentManagement = () => {
     if (formData.lastName.trim() !== selectedStudent.LastName.trim()) {
       changes.push(`Last Name: ${selectedStudent.LastName} → ${formData.lastName.trim()}`);
     }
-    if (formData.dateOfBirth !== new Date(selectedStudent.DOB).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })) {
+    if (formData.dateOfBirth !== new Date(selectedStudent.DOB).toISOString().split('T')[0]) {
       changes.push(`Date of Birth: ${new Date(selectedStudent.DOB).toLocaleDateString()} → ${new Date(formData.dateOfBirth).toLocaleDateString()}`);
     }
 

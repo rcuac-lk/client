@@ -85,7 +85,7 @@ const StudentListComponent = (props) => {
                 admissionNumber: response.data.AdmissionNumber,
                 firstName: response.data.FirstName,
                 lastName: response.data.LastName,
-                dateOfBirth: new Date(response.data.DOB).toISOString().split('T')[0]
+                dateOfBirth: new Date(response.data.DOB).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })
             });
             setIsEditModalOpen(true);
         } catch (error) {
@@ -152,7 +152,7 @@ const StudentListComponent = (props) => {
         formData.admissionNumber !== selectedUser.AdmissionNumber ||
         formData.firstName !== selectedUser.FirstName ||
         formData.lastName !== selectedUser.LastName ||
-        formData.dateOfBirth !== new Date(selectedUser.DOB).toISOString().split('T')[0];
+        formData.dateOfBirth !== new Date(selectedUser.DOB).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
 
         if (!hasChanges) {
         setFormErrors({

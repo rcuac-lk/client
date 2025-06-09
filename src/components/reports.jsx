@@ -290,7 +290,7 @@ const Reports = () => {
     
     // Autofill date range with today for Attendance report
     if (reportName === 'Attendance') {
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
       setDateRange({ start: today, end: today });
     }
     
@@ -380,7 +380,7 @@ const Reports = () => {
         XLSX.utils.book_append_sheet(wb, ws, selectedReport);
         
         // Generate Excel file
-        const fileName = `${selectedReport}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        const fileName = `${selectedReport}_${new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })}.xlsx`;
         XLSX.writeFile(wb, fileName);
       }
     }

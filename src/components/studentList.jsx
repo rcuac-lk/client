@@ -297,7 +297,7 @@ const StudentListComponent = (props) => {
                         <tr>
                             <th scope="col" className="px-6 py-3">NAME</th>
                             <th scope="col" className="px-6 py-3">AGE GROUP</th>
-                            <th scope="col" className="px-6 py-3">ROLE</th>
+                            <th scope="col" className="px-6 py-3">PARENT</th>
                             <th scope="col" className="px-6 py-3">ACTION</th>
                         </tr>
                     </thead>
@@ -321,7 +321,7 @@ const StudentListComponent = (props) => {
                                     </div>
                                 </th>
                                 <td className="px-6 py-4">{user.AgeCategory}</td>
-                                <td className="px-6 py-4">Student</td>
+                                <td className="px-6 py-4">{user.ParentName}</td>
                                 <td className="px-6 py-4">
                                     <div className="flex flex-row gap-x-2">
                                         <button

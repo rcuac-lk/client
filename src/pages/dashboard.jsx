@@ -493,15 +493,15 @@ const Dashboard = () => {
           className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full"
         >
           <div className="relative w-full max-w-2xl max-h-full">
-            <form className="relative bg-white rounded-lg shadow dark:bg-gray-700">
-              <div className="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <form className="relative rounded-lg shadow bg-gray-700">
+              <div className="flex items-start justify-between p-4 border-b rounded-t border-gray-600">
+                <h3 className="text-xl font-semibold text-white">
                   Update Password
                 </h3>
                 <button
                   type="button"
                   onClick={closePasswordModal}
-                  className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                  className="text-gray-400 bg-transparent rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center hover:bg-gray-600 hover:text-white"
                 >
                   <svg
                     className="w-3 h-3"
@@ -524,7 +524,7 @@ const Dashboard = () => {
               <div className="p-6 space-y-6">
                 {passwordError && (
                   <div
-                    className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
+                    className="p-4 mb-4 text-sm rounded-lg bg-gray-800 text-red-400"
                     role="alert"
                   >
                     {passwordError}
@@ -542,7 +542,7 @@ const Dashboard = () => {
                       type="password"
                       name="oldPassword"
                       id="oldPassword"
-                      className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      className="shadow-sm border text-sm rounded-lg block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
                       value={passwordData.oldPassword}
                       onChange={handlePasswordChange}
                       required
@@ -559,7 +559,7 @@ const Dashboard = () => {
                       type="password"
                       name="newPassword"
                       id="newPassword"
-                      className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      className="shadow-sm border text-sm rounded-lg block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
                       value={passwordData.newPassword}
                       onChange={handlePasswordChange}
                       required
@@ -576,7 +576,7 @@ const Dashboard = () => {
                       type="password"
                       name="confirmPassword"
                       id="confirmPassword"
-                      className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      className="shadow-sm border text-sm rounded-lg block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
                       value={passwordData.confirmPassword}
                       onChange={handlePasswordChange}
                       required
@@ -584,18 +584,18 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
+              <div className="flex items-center p-6 space-x-2 border-t rounded-b border-gray-600">
                 <button
                   type="submit"
                   onClick={handlePasswordUpdate}
-                  className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  className="text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800"
                 >
                   Update Password
                 </button>
                 <button
                   type="button"
                   onClick={closePasswordModal}
-                  className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600"
+                  className="focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border text-sm font-medium px-5 py-2.5 focus:z-10 bg-gray-700 text-gray-300 border-gray-500 hover:text-white hover:bg-gray-600"
                 >
                   Cancel
                 </button>
@@ -613,15 +613,15 @@ const Dashboard = () => {
           className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full"
         >
           <div className="relative w-full max-w-2xl max-h-full">
-            <form className="relative bg-white rounded-lg shadow dark:bg-gray-700">
-              <div className="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <form className="relative rounded-lg shadow bg-gray-700">
+              <div className="flex items-start justify-between p-4 border-b rounded-t border-gray-600">
+                <h3 className="text-xl font-semibold text-white">
                   Edit Profile
                 </h3>
                 <button
                   type="button"
                   onClick={closeEditModal}
-                  className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                  className="text-gray-400 bg-transparent rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center hover:bg-gray-600 hover:text-white"
                 >
                   <svg
                     className="w-3 h-3"
@@ -654,7 +654,7 @@ const Dashboard = () => {
                       type="text"
                       name="FirstName"
                       id="first-name"
-                      className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      className="shadow-sm border text-sm rounded-lg block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
                       value={selectedUser.FirstName || ""}
                       onChange={handleInputChange}
                       required
@@ -671,7 +671,7 @@ const Dashboard = () => {
                       type="text"
                       name="LastName"
                       id="last-name"
-                      className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      className="shadow-sm border text-sm rounded-lg block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
                       value={selectedUser.LastName || ""}
                       onChange={handleInputChange}
                       required
@@ -688,7 +688,7 @@ const Dashboard = () => {
                       type="email"
                       name="Email"
                       id="email"
-                      className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      className="shadow-sm border text-sm rounded-lg block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
                       value={selectedUser.Email || ""}
                       onChange={handleInputChange}
                       required
@@ -707,7 +707,7 @@ const Dashboard = () => {
                       value={selectedUser.Role || ""}
                       disabled
                       onChange={handleInputChange}
-                      className="block w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-600 dark:text-white"
+                      className="block w-full p-2.5 border border-gray-300 rounded-lg shadow-sm bg-gray-600 text-white"
                     >
                       <option value="Admin">Admin</option>
                       <option value="Coach">Coach</option>
@@ -717,18 +717,18 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
+              <div className="flex items-center p-6 space-x-2 border-t rounded-b border-gray-600">
                 <button
                   type="submit"
                   onClick={saveChanges}
-                  className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  className="text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800"
                 >
                   Save changes
                 </button>
                 <button
                   type="button"
                   onClick={closeEditModal}
-                  className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600"
+                  className="focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border text-sm font-medium px-5 py-2.5 focus:z-10 bg-gray-700 text-gray-300 border-gray-500 hover:text-white hover:bg-gray-600"
                 >
                   Cancel
                 </button>

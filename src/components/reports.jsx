@@ -63,6 +63,24 @@ const reportDefinitions = {
     ],
     requiresDateRange: true,
     accessRoles: ["Admin"]
+  },
+  Leaderboard: {
+    id: "leaderboard",
+    title: "Student Leaderboard",
+    description: "View student rankings and best timings",
+    columns: [
+      { key: "rank", label: "Rank", type: "number" },
+      { key: "admissionNumber", label: "Admission Number", type: "text" },
+      { key: "studentName", label: "Student Name", type: "text" },
+      { key: "ageGroup", label: "Age Group", type: "text" },
+      { key: "event", label: "Event", type: "text" },
+      { key: "distance", label: "Distance", type: "text" },
+      { key: "bestTime", label: "Best Time", type: "text" },
+      { key: "session", label: "Session", type: "text" },
+      { key: "date", label: "Date", type: "date" }
+    ],
+    requiresDateRange: true,
+    accessRoles: ["Admin", "Manager", "Coach", "Parent"]
   }
 };
 
@@ -251,6 +269,85 @@ const reportHandlers = {
         "Details": item.details || ""
       }));
     }
+  },
+  
+  Leaderboard: {
+    fetchData: async (dateRange, filters, filterOptions) => {
+      try {
+        const startDate = dateRange.start || new Date().toISOString().split('T')[0];
+        const endDate = dateRange.end || new Date().toISOString().split('T')[0];
+        
+        const user = await AuthService.getCurrentUser();
+
+        // Find the IDs for the selected filters
+        const selectedEvent = filterOptions.events.find(e => e.EventType === filters.event);
+        const selectedDistance = filterOptions.distances.find(d => d.EventLength === filters.distance);
+        const selectedSession = filterOptions.sessions.find(s => s.SessionName === filters.session);
+        const selectedAgeGroup = filterOptions.ageGroups.find(a => a.name === filters.ageGroup);
+
+        let data = {
+          startDate,
+          endDate,
+          userID: user.id,
+          eventID: selectedEvent?.EventTypeID || '',
+          distanceID: selectedDistance?.EventLengthID || '',
+          ageCategory: filters.ageGroup || '',
+          sessionID: selectedSession?.SessionID || ''
+        }
+
+        console.log('Sending data to API:', data);
+        const response = await UserService.getLeaderboardDataForReport(data);
+        console.log('API Response:', response.data.performanceData);
+        
+        if (response.data && response.data.performanceData) {
+          return response.data.performanceData.map(student => ({
+            id: student.UserID,
+            admissionNumber: student.AdmissionNumber,
+            studentName: `${student.FirstName} ${student.LastName}`,
+            ageGroup: student.AgeCategory,
+            event: student.event,
+            distance: student.distance,
+            bestTime: student.bestTime,
+            session: student.session,
+            date: new Date(student.bestTimeDate).toISOString().split('T')[0],
+            rank: student.rank
+          }));
+        }
+        
+        return [];
+      } catch (error) {
+        console.error("Error fetching leaderboard data:", error);
+        return [];
+      }
+    },
+    filterData: (data, filters) => {
+      const { searchQuery } = filters;
+      let filteredData = data;
+
+      // Text search filter
+      if (searchQuery) {
+        filteredData = filteredData.filter(item => 
+          item.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.admissionNumber.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+
+      // No need to sort or add ranks as they come from the API
+      return filteredData;
+    },
+    getExportData: (data) => {
+      return data.map(item => ({
+        "Rank": item.rank || "",
+        "Admission Number": item.admissionNumber || "",
+        "Student Name": item.studentName || "",
+        "Age Group": item.ageGroup || "",
+        "Event": item.event || "",
+        "Distance": item.distance || "",
+        "Best Time": item.bestTime || "",
+        "Session": item.session || "",
+        "Date": item.date || ""
+      }));
+    }
   }
 };
 
@@ -261,9 +358,63 @@ const Reports = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
-  const [userRole, setUserRole] = useState("Admin"); // Set default role for testing
+  const [userRole, setUserRole] = useState("Admin");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Filter options state
+  const [ageGroups, setAgeGroups] = useState([]);
+  const [sessions, setSessions] = useState([]);
+  const [distances, setDistances] = useState([]);
+  const [events, setEvents] = useState([]);
+  
+  // Selected filters state
+  const [ageGroup, setAgeGroup] = useState("");
+  const [session, setSession] = useState("");
+  const [distance, setDistance] = useState("");
+  const [event, setEvent] = useState("");
+
+  // Fetch filter options when component mounts
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        // Fetch age groups
+        const ageGroupsResponse = await UserService.ageGroups();
+        if (ageGroupsResponse.data) {
+          // Filter out "All Ages" option
+          const filteredAgeGroups = ageGroupsResponse.data.data.filter(group => group.name !== "All Ages");
+          console.log(filteredAgeGroups);
+          setAgeGroups(filteredAgeGroups);
+        }
+
+        // Fetch sessions
+        const sessionsResponse = await UserService.getSessionData();
+        if (sessionsResponse.data) {
+          console.log(sessionsResponse.data.sessions);
+          setSessions(sessionsResponse.data.sessions);
+        }
+
+        // Fetch distances
+        const distancesResponse = await UserService.getEventLengths();
+        if (distancesResponse.data) {
+          console.log(distancesResponse.data.eventLengths);
+          setDistances(distancesResponse.data.eventLengths);
+        }
+
+        // Fetch events
+        const eventsResponse = await UserService.getEventTypes();
+        if (eventsResponse.data) {
+          console.log(eventsResponse.data.eventTypes);
+          setEvents(eventsResponse.data.eventTypes);
+        }
+      } catch (error) {
+        console.error("Error fetching filter options:", error);
+        setError("Failed to load filter options. Please refresh the page.");
+      }
+    };
+
+    fetchFilterOptions();
+  }, []);
 
   // Get user role and age categories on component mount
   useEffect(() => {
@@ -290,15 +441,34 @@ const Reports = () => {
     
     if (!reportName) return;
     
+    // Reset filters when changing reports
+    if (reportName === "Leaderboard") {
+      setAgeGroup("");
+      setSession("");
+      setDistance("");
+      setEvent("");
+    }
+    
     setIsLoading(true);
     try {
       const handler = reportHandlers[reportName];
       if (handler) {
-        const data = await handler.fetchData(dateRange);
+        const data = await handler.fetchData(
+          dateRange, 
+          { ageGroup, session, distance, event },
+          { ageGroups, sessions, distances, events }
+        );
         setReportData(data);
         
         // Apply initial filtering
-        const filtered = handler.filterData(data, { searchQuery, dateRange });
+        const filtered = handler.filterData(data, { 
+          searchQuery, 
+          dateRange,
+          ageGroup,
+          session,
+          distance,
+          event
+        });
         setFilteredData(filtered);
       }
     } catch (err) {
@@ -309,52 +479,130 @@ const Reports = () => {
     }
   };
 
-  // Handle search and filter changes
-  useEffect(() => {
-    if (selectedReport && reportData.length > 0) {
-      const handler = reportHandlers[selectedReport];
-      if (handler) {
-        const filtered = handler.filterData(reportData, { searchQuery, dateRange });
-        setFilteredData(filtered);
+  // Handle filter changes for Leaderboard
+  const handleFilterChange = async (filterType, value) => {
+    // Update the state for the changed filter
+    switch (filterType) {
+      case 'ageGroup':
+        setAgeGroup(value);
+        break;
+      case 'session':
+        setSession(value);
+        break;
+      case 'distance':
+        setDistance(value);
+        break;
+      case 'event':
+        setEvent(value);
+        break;
+      default:
+        break;
+    }
+
+    // For Leaderboard, check if all required filters are set
+    if (selectedReport === "Leaderboard") {
+      const allFiltersSet = ageGroup && session && distance && event;
+      const hasDateRange = dateRange.start || dateRange.end;
+
+      // Only make API call if all required filters are set and at least one date is provided
+      if (allFiltersSet && hasDateRange) {
+        setIsLoading(true);
+        try {
+          const handler = reportHandlers[selectedReport];
+          if (handler) {
+            const data = await handler.fetchData(
+              dateRange,
+              { ageGroup, session, distance, event },
+              { ageGroups, sessions, distances, events }
+            );
+            setReportData(data);
+            setFilteredData(data);
+          }
+        } catch (err) {
+          console.error("Error updating leaderboard data:", err);
+          setError("Failed to update leaderboard data. Please try again.");
+        } finally {
+          setIsLoading(false);
+        }
       }
     }
-  }, [searchQuery, dateRange.start, dateRange.end, selectedReport, reportData]);
+  };
 
   // Handle date range changes
   const handleDateRangeChange = async (field, value) => {
     const newDateRange = { ...dateRange, [field]: value };
     setDateRange(newDateRange);
     
-    // If both dates are set and the date range is not too large, refresh the data
-    if (selectedReport && reportDefinitions[selectedReport].requiresDateRange && 
-        newDateRange.start && newDateRange.end) {
-      // Check if date range is reasonable (e.g., not more than 31 days)
-      const startDate = new Date(newDateRange.start);
-      const endDate = new Date(newDateRange.end);
-      const daysDifference = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-      
-      if (daysDifference > 31) {
-        setError(`Please select a date range of 31 days or less. Current selection: ${daysDifference} days.`);
-        return;
-      }
-      
-      setIsLoading(true);
-      setError(null);
-      try {
-        const handler = reportHandlers[selectedReport];
-        if (handler) {
-          const data = await handler.fetchData(newDateRange);
-          setReportData(data);
+    // For Leaderboard, check if all required filters are set
+    if (selectedReport === "Leaderboard") {
+      const allFiltersSet = ageGroup && session && distance && event;
+      const hasDateRange = newDateRange.start || newDateRange.end;
+
+      // Only make API call if all required filters are set and at least one date is provided
+      if (allFiltersSet && hasDateRange) {
+        // Check if date range is reasonable (e.g., not more than 31 days)
+        if (newDateRange.start && newDateRange.end) {
+          const startDate = new Date(newDateRange.start);
+          const endDate = new Date(newDateRange.end);
+          const daysDifference = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
           
-          // Apply filtering
-          const filtered = handler.filterData(data, { searchQuery, dateRange: newDateRange });
-          setFilteredData(filtered);
+          if (daysDifference > 31) {
+            setError(`Please select a date range of 31 days or less. Current selection: ${daysDifference} days.`);
+            return;
+          }
         }
-      } catch (err) {
-        console.error(`Error refreshing ${selectedReport} report:`, err);
-        setError(`Failed to refresh ${selectedReport} report. Please try again.`);
-      } finally {
-        setIsLoading(false);
+        
+        setIsLoading(true);
+        setError(null);
+        try {
+          const handler = reportHandlers[selectedReport];
+          if (handler) {
+            const data = await handler.fetchData(
+              newDateRange,
+              { ageGroup, session, distance, event },
+              { ageGroups, sessions, distances, events }
+            );
+            setReportData(data);
+            setFilteredData(data);
+          }
+        } catch (err) {
+          console.error("Error updating leaderboard data:", err);
+          setError("Failed to update leaderboard data. Please try again.");
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    } else if (selectedReport && reportDefinitions[selectedReport].requiresDateRange) {
+      // Handle date range changes for other reports as before
+      if (newDateRange.start && newDateRange.end) {
+        const startDate = new Date(newDateRange.start);
+        const endDate = new Date(newDateRange.end);
+        const daysDifference = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+        
+        if (daysDifference > 31) {
+          setError(`Please select a date range of 31 days or less. Current selection: ${daysDifference} days.`);
+          return;
+        }
+        
+        setIsLoading(true);
+        setError(null);
+        try {
+          const handler = reportHandlers[selectedReport];
+          if (handler) {
+            const data = await handler.fetchData(
+              newDateRange,
+              { ageGroup, session, distance, event },
+              { ageGroups, sessions, distances, events }
+            );
+            setReportData(data);
+            setFilteredData(data);
+          }
+        } catch (err) {
+          console.error(`Error refreshing ${selectedReport} report:`, err);
+          setError(`Failed to refresh ${selectedReport} report. Please try again.`);
+        } finally {
+          setIsLoading(false);
+        }
       }
     }
   };
@@ -381,62 +629,161 @@ const Reports = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="relative overflow-x-auto shadow-md sm:rounded-lg mt-16">
-        <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 md:space-y-0 py-4 bg-gray-900">
-          <div className="flex space-x-4 px-2">
-            {/* Report Selection Dropdown */}
-            <select
-              value={selectedReport}
-              onChange={(e) => handleReportChange(e.target.value)}
-              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            >
-              <option value="">Select Report</option>
-              {getAvailableReports().map((report) => (
-                <option key={report} value={report}>{report}</option>
-              ))}
-            </select>
-
-            {/* Search Input */}
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="Search..."
-              disabled={!selectedReport}
-            />
-
-            {/* Date Range Filter */}
-            {selectedReport && reportDefinitions[selectedReport]?.requiresDateRange && (
-              <div className="flex space-x-2">
-                <input
-                  type="date"
-                  value={dateRange.start}
-                  onChange={(e) => handleDateRangeChange('start', e.target.value)}
-                  className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  placeholder="Start Date"
-                />
-                <input
-                  type="date"
-                  value={dateRange.end}
-                  onChange={(e) => handleDateRangeChange('end', e.target.value)}
-                  className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  placeholder="End Date"
-                />
-              </div>
-            )}
-            
-            {/* Export Button */}
-            {selectedReport && filteredData.length > 0 && (
-              <button
-                onClick={handleExport}
-                className="h-10 px-4 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+    <div className="container mx-auto">
+      <div className="relative shadow-md sm:rounded-lg mt-16">
+        {/* Fixed Filters Section */}
+        <div className="sticky top-0 z-10 bg-gray-900 rounded-lg">
+          <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 md:space-y-0 py-4">
+            <div className="flex flex-wrap gap-4 px-2">
+              {/* Report Selection Dropdown */}
+              <select
+                value={selectedReport}
+                onChange={(e) => handleReportChange(e.target.value)}
+                className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               >
-                Export
-              </button>
-            )}
+                <option value="">Select Report</option>
+                {getAvailableReports().map((report) => (
+                  <option key={report} value={report}>{report}</option>
+                ))}
+              </select>
+
+              {/* Search Input */}
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="Search..."
+                disabled={!selectedReport}
+              />
+
+              {/* Date Range Filter */}
+              {selectedReport && reportDefinitions[selectedReport]?.requiresDateRange && (
+                <div className="flex space-x-2">
+                  <input
+                    type="date"
+                    value={dateRange.start}
+                    onChange={(e) => handleDateRangeChange('start', e.target.value)}
+                    className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    placeholder="Start Date"
+                  />
+                  <input
+                    type="date"
+                    value={dateRange.end}
+                    onChange={(e) => handleDateRangeChange('end', e.target.value)}
+                    className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    placeholder="End Date"
+                  />
+                </div>
+              )}
+
+              {/* Additional filters for Leaderboard */}
+              {selectedReport === "Leaderboard" && (
+                <>
+                  <select
+                    value={ageGroup}
+                    onChange={(e) => handleFilterChange('ageGroup', e.target.value)}
+                    className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    required
+                  >
+                    <option value="">Select Age Group</option>
+                    {ageGroups.map((group) => (
+                      <option key={group.value} value={group.name}>
+                        {group.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={session}
+                    onChange={(e) => handleFilterChange('session', e.target.value)}
+                    className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    required
+                  >
+                    <option value="">Select Session</option>
+                    {sessions.map((session) => (
+                      <option key={session.SessionID} value={session.SessionName}>
+                        {session.SessionName}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={distance}
+                    onChange={(e) => handleFilterChange('distance', e.target.value)}
+                    className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    required
+                  >
+                    <option value="">Select Distance</option>
+                    {distances.map((distance) => (
+                      <option key={distance.EventLengthID} value={distance.EventLength}>
+                        {distance.EventLength}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={event}
+                    onChange={(e) => handleFilterChange('event', e.target.value)}
+                    className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    required
+                  >
+                    <option value="">Select Event</option>
+                    {events.map((event) => (
+                      <option key={event.EventTypeID} value={event.EventType}>
+                        {event.EventType}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              )}
+              
+              {/* Export Button */}
+              {selectedReport && filteredData.length > 0 && (
+                <button
+                  onClick={handleExport}
+                  className="h-10 px-4 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                >
+                  Export
+                </button>
+              )}
+            </div>
           </div>
+
+          {/* Report Header */}
+          {selectedReport && !isLoading && (
+            <div className="p-4 bg-gray-800">
+              <h2 className="text-xl font-bold text-white">{reportDefinitions[selectedReport].title}</h2>
+              <p className="text-gray-400">{reportDefinitions[selectedReport].description}</p>
+              {dateRange.start && dateRange.end && (
+                <p className="text-gray-400 mt-2">
+                  Period: {new Date(dateRange.start).toLocaleDateString()} to {new Date(dateRange.end).toLocaleDateString()}
+                </p>
+              )}
+              {selectedReport === "Leaderboard" && ageGroup && session && distance && event && (
+                <p className="text-gray-400 mt-2">
+                  Category: {ageGroup} | {event} | {distance} | {session}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Fixed Table Header */}
+          {selectedReport && !isLoading && filteredData.length > 0 && (
+            <div className="bg-gray-700">
+              <table className="w-full text-sm text-left rtl:text-right text-gray-400">
+                <thead className="text-xs uppercase text-gray-400">
+                  <tr>
+                    {reportDefinitions[selectedReport].columns.map((column) => (
+                      <th key={column.key} scope="col" className="px-6 py-3">
+                        {column.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* Loading Indicator */}
@@ -454,50 +801,22 @@ const Reports = () => {
           </div>
         )}
 
-        {/* Report Header */}
-        {selectedReport && !isLoading && (
-          <div className="p-4 bg-gray-800">
-            <h2 className="text-xl font-bold text-white">{reportDefinitions[selectedReport].title}</h2>
-            <p className="text-gray-400">{reportDefinitions[selectedReport].description}</p>
-            {dateRange.start && dateRange.end && (
-              <p className="text-gray-400 mt-2">
-                Period: {new Date(dateRange.start).toLocaleDateString()} to {new Date(dateRange.end).toLocaleDateString()}
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Report Table */}
+        {/* Scrollable Table Body */}
         {selectedReport && !isLoading && filteredData.length > 0 && (
-          <table className="w-full text-sm text-left rtl:text-right text-gray-400">
-            <thead className="text-xs uppercase bg-gray-700 text-gray-400">
-              <tr>
-                {reportDefinitions[selectedReport].columns.map((column) => (
-                  <th key={column.key} scope="col" className="px-6 py-3">
-                    {column.label}
-                  </th>
+          <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 300px)' }}>
+            <table className="w-full text-sm text-left rtl:text-right text-gray-400">
+              <tbody>
+                {filteredData.map((row) => (
+                  <tr key={row.id} className="bg-gray-800 border-gray-700 hover:bg-gray-600">
+                    {reportDefinitions[selectedReport].columns.map((column) => (
+                      <td key={column.key} className="px-6 py-4">
+                        {row[column.key]}
+                      </td>
+                    ))}
+                  </tr>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((row) => (
-                <tr key={row.id} className="bg-gray-800 border-gray-700 hover:bg-gray-600">
-                  {reportDefinitions[selectedReport].columns.map((column) => (
-                    <td key={column.key} className="px-6 py-4">
-                      {row[column.key]}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-
-        {/* No Data Message */}
-        {selectedReport && !isLoading && filteredData.length === 0 && (
-          <div className="p-8 text-center text-gray-400">
-            <p>No data available for the selected criteria.</p>
-            <p className="mt-2 text-sm">Try adjusting your filters or date range.</p>
+              </tbody>
+            </table>
           </div>
         )}
       </div>

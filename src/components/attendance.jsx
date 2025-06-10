@@ -83,7 +83,6 @@ const UserListComponent = () => {
       });
     }
     else if(student.LastUpdate === isPresent) {
-        console.log("[UE7002]Attendance already set to [" + isPresent, "] for [" + student.LastName + "] on [" + customDate + "] for [" + customSession + "]");
         fetchFilteredStudents();
     }
     else {
@@ -147,7 +146,6 @@ const UserListComponent = () => {
   useEffect(() => {
     const selected = sessions.find(s => String(s.SessionID) === String(sessionFilter));
     setCustomSession(selected ? selected.SessionName : "");
-    console.log("Session Filter [" + sessionFilter + '][' + (selected ? selected.SessionName : "") + ']');
   }, [sessionFilter, sessions]);
 
   const createNewSession = (sessionName, date) => {

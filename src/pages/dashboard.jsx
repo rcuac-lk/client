@@ -460,7 +460,7 @@ const Dashboard = () => {
       </aside>
 
       <div className="p-4 sm:ml-64">
-        <div className="overflow-hidden min-h-screen flex flex-col">
+        <div className="overflow-hidden flex flex-col">
           {selectedSection === "dashboard" && (
             <>
               <div className="flex flex-col items-center mx-auto justify-center m-auto">

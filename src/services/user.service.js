@@ -115,6 +115,11 @@ const getTimingDataForReport = (startDate, endDate, id) => {
   });
 }
 
+const getLeaderboardDataForReport = (data) => {
+  console.log(data);
+  return api.post(API_URL + "users/getLeaderboardDataForReport", data, { headers: authHeader() });
+}
+
 const UserService = {
   notApprovedUsers,
   getAllUsers,
@@ -138,7 +143,8 @@ const UserService = {
   approveStudent,
   rejectStudent,
   getAttendancedataForReport,
-  getTimingDataForReport
+  getTimingDataForReport,
+  getLeaderboardDataForReport
 };
 
 export default UserService;

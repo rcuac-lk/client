@@ -8,6 +8,7 @@ import Attendance from "../components/attendance";
 import Timing from "../components/timing";
 import Reports from "../components/reports";
 import ManagerService from "../services/manager.service";
+import Settings from "../components/settings";
 
 const ManagerDashboard = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -440,6 +441,24 @@ const ManagerDashboard = () => {
                 <span className="ms-3">Reports</span>
               </a>
             </li>
+            <li>
+              <a
+                href="#"
+                onClick={() => handleMenuClick("settings")}
+                className="flex items-center p-2 rounded-lg text-white hover:bg-gray-700 group"
+              >
+                <svg
+                  className="w-5 h-5 transition duration-75 text-gray-400 group-hover:text-white"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 22 21"
+                >
+                  <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span className="ms-3">Settings</span>
+              </a>
+            </li>
             {/* Other items here */}
           </ul>
           <div className="mt-auto">
@@ -498,6 +517,7 @@ const ManagerDashboard = () => {
           {selectedSection === "attendance" && <Attendance />}
           {selectedSection === "timing" && <Timing />}
           {selectedSection === "reports" && <Reports role={role} />}
+          {selectedSection === "settings" && <Settings />}
         </div>
       </div>
 

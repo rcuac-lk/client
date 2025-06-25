@@ -287,13 +287,18 @@ const reportHandlers = {
         const selectedSession = filterOptions.sessions.find(s => s.SessionName === filters.session);
         const selectedAgeGroup = filterOptions.ageGroups.find(a => a.name === filters.ageGroup);
 
+        let newAgeGroup = filters.ageGroup;
+        let newSession = filters.session;
+        let newDistance = filters.distance;
+        let newEvent = filters.event;
+
         let data = {
           startDate,
           endDate,
           userID: user.id,
           eventID: selectedEvent?.EventTypeID || '',
           distanceID: selectedDistance?.EventLengthID || '',
-          ageCategory: filters.ageGroup || '',
+          ageCategory: newAgeGroup || '',
           sessionID: selectedSession?.SessionID || ''
         }
 
@@ -493,18 +498,27 @@ const Reports = () => {
 
   // Handle filter changes for Leaderboard
   const handleFilterChange = async (filterType, value) => {
-    // Update the state for the changed filter
+    // Prepare new filter values
+    let newAgeGroup = ageGroup;
+    let newSession = session;
+    let newDistance = distance;
+    let newEvent = event;
+
     switch (filterType) {
       case 'ageGroup':
+        newAgeGroup = value;
         setAgeGroup(value);
         break;
       case 'session':
+        newSession = value;
         setSession(value);
         break;
       case 'distance':
+        newDistance = value;
         setDistance(value);
         break;
       case 'event':
+        newEvent = value;
         setEvent(value);
         break;
       default:
@@ -513,7 +527,7 @@ const Reports = () => {
 
     // For Leaderboard, check if all required filters are set
     if (selectedReport === "Leaderboard") {
-      const allFiltersSet = ageGroup && session && distance && event;
+      const allFiltersSet = newAgeGroup && newSession && newDistance && newEvent;
       const hasDateRange = dateRange.start || dateRange.end;
 
       // Only make API call if all required filters are set and at least one date is provided
@@ -524,7 +538,7 @@ const Reports = () => {
           if (handler) {
             const data = await handler.fetchData(
               dateRange,
-              { ageGroup, session, distance, event },
+              { ageGroup: newAgeGroup, session: newSession, distance: newDistance, event: newEvent },
               { ageGroups, sessions, distances, events }
             );
             setReportData(data);
@@ -577,7 +591,31 @@ const Reports = () => {
     setDateRange(newDateRange);
     
     if (selectedReport === "Leaderboard") {
-      // ... existing Leaderboard handling ...
+      const allFiltersSet = ageGroup && session && distance && event;
+      const hasDateRange = newDateRange.start || newDateRange.end;
+
+      // Only make API call if all required filters are set and at least one date is provided
+      if (allFiltersSet && hasDateRange) {
+        setIsLoading(true);
+        setError(null);
+        try {
+          const handler = reportHandlers[selectedReport];
+          if (handler) {
+            const data = await handler.fetchData(
+              newDateRange,
+              { ageGroup, session, distance, event },
+              { ageGroups, sessions, distances, events }
+            );
+            setReportData(data);
+            setFilteredData(data);
+          }
+        } catch (err) {
+          console.error(`Error refreshing ${selectedReport} report:`, err);
+          setError(`Failed to refresh ${selectedReport} report. Please try again.`);
+        } finally {
+          setIsLoading(false);
+        }
+      }
     } else if (selectedReport && reportDefinitions[selectedReport].requiresDateRange) {
       // Handle date range changes for other reports
       if (newDateRange.start && newDateRange.end) {
@@ -602,7 +640,6 @@ const Reports = () => {
               { ageGroups, sessions, distances, events }
             );
             setReportData(data);
-            
             // Apply search filter if there's an active search
             if (searchQuery.trim()) {
               const searchTerm = searchQuery.toLowerCase().trim();

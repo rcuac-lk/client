@@ -824,23 +824,6 @@ const Reports = () => {
               )}
             </div>
           )}
-
-          {/* Fixed Table Header */}
-          {selectedReport && !isLoading && filteredData.length > 0 && (
-            <div className="bg-gray-700">
-              <table className="w-full text-sm text-left rtl:text-right text-gray-400">
-                <thead className="text-xs uppercase text-gray-400">
-                  <tr>
-                    {reportDefinitions[selectedReport].columns.map((column) => (
-                      <th key={column.key} scope="col" className="px-6 py-3">
-                        {column.label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-              </table>
-            </div>
-          )}
         </div>
 
         {/* Loading Indicator */}
@@ -858,10 +841,23 @@ const Reports = () => {
           </div>
         )}
 
-        {/* Scrollable Table Body */}
+        {/* Table Section: Header and Body in One Table for Proper Alignment */}
         {selectedReport && !isLoading && filteredData.length > 0 && (
           <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 300px)' }}>
             <table className="w-full text-sm text-left rtl:text-right text-gray-400">
+              <thead className="text-xs uppercase text-gray-400 bg-gray-700">
+                <tr>
+                  {reportDefinitions[selectedReport].columns.map((column) => (
+                    <th
+                      key={column.key}
+                      scope="col"
+                      className="px-6 py-3 sticky top-0 z-20 bg-gray-700"
+                    >
+                      {column.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
               <tbody>
                 {filteredData.map((row, index) => (
                   <tr key={`${row.id}-${index}`} className="bg-gray-800 border-gray-700 hover:bg-gray-600">

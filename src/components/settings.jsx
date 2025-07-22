@@ -1,14 +1,5 @@
-import React, { useState } from "react";
-
-const mockEvents = [
-  { id: 1, name: "100m Freestyle", date: "2024-07-01", location: "Main Pool" },
-  { id: 2, name: "200m Butterfly", date: "2024-07-05", location: "Secondary Pool" },
-];
-
-const mockLengths = [
-  { id: 1, length: "50m" },
-  { id: 2, length: "100m" },
-];
+import React, { useState, useEffect } from "react";
+import UserService from "../services/user.service";
 
 const mockSessions = [
   { id: 1, name: "Morning Swim", description: "Early session", date: "2024-07-10", eventIds: [1], lengthIds: [1] },
@@ -17,14 +8,14 @@ const mockSessions = [
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("events");
-  const [events, setEvents] = useState(mockEvents);
+  const [events, setEvents] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [form, setForm] = useState({ name: "", date: "", location: "" });
+  const [form, setForm] = useState({ EventName: "" });
 
-  const [lengths, setLengths] = useState(mockLengths);
+  const [lengths, setLengths] = useState([]);
   const [sessions, setSessions] = useState(mockSessions);
   const [isAddLengthModalOpen, setIsAddLengthModalOpen] = useState(false);
   const [isEditLengthModalOpen, setIsEditLengthModalOpen] = useState(false);
@@ -38,15 +29,41 @@ const Settings = () => {
   const [selectedSession, setSelectedSession] = useState(null);
   const [sessionForm, setSessionForm] = useState({ name: "", description: "", date: "", eventIds: [], lengthIds: [] });
 
+  // Fetch events and lengths from API
+  useEffect(() => {
+    fetchEvents();
+    fetchLengths();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      const res = await UserService.getEventTypes();
+      console.log("events ", res.data);
+      setEvents(res.data.eventTypes);
+    } catch (err) {
+      setEvents([]);
+    }
+  };
+
+  const fetchLengths = async () => {
+    try {
+      const res = await UserService.getEventLengths();
+      console.log("lengths ", res.data);
+      setLengths(res.data.eventLengths);
+    } catch (err) {
+      setLengths([]);
+    }
+  };
+
   // Handlers for Add/Edit
   const openAddModal = () => {
-    setForm({ name: "", date: "", location: "" });
+    setForm({ EventName: "" });
     setIsAddModalOpen(true);
   };
   const closeAddModal = () => setIsAddModalOpen(false);
   const openEditModal = (event) => {
     setSelectedEvent(event);
-    setForm({ name: event.name, date: event.date, location: event.location });
+    setForm({ EventName: event.EventType });
     setIsEditModalOpen(true);
   };
   const closeEditModal = () => setIsEditModalOpen(false);
@@ -62,43 +79,77 @@ const Settings = () => {
   };
 
   // Add event
-  const handleAdd = (e) => {
+  const handleAdd = async (e) => {
     e.preventDefault();
-    setEvents([
-      ...events,
-      { id: Date.now(), name: form.name, date: form.date, location: form.location },
-    ]);
-    closeAddModal();
+    try {
+      await UserService.addEvent(form);
+      fetchEvents();
+      closeAddModal();
+    } catch (err) {
+      // handle error
+    }
   };
 
   // Edit event
-  const handleEdit = (e) => {
+  const handleEdit = async (e) => {
     e.preventDefault();
-    setEvents(
-      events.map((ev) =>
-        ev.id === selectedEvent.id ? { ...ev, ...form } : ev
-      )
-    );
-    closeEditModal();
+    try {
+      await UserService.updateEvent(selectedEvent.EventTypeID, form);
+      fetchEvents();
+      closeEditModal();
+    } catch (err) {
+      // handle error
+    }
   };
 
   // Delete event
-  const handleDelete = () => {
-    setEvents(events.filter((ev) => ev.id !== selectedEvent.id));
-    closeDeleteModal();
+  const handleDelete = async () => {
+    try {
+      await UserService.deactivateEvent(selectedEvent.EventTypeID);
+      fetchEvents();
+      closeDeleteModal();
+    } catch (err) {
+      // handle error
+    }
   };
 
   // Length handlers
   const openAddLengthModal = () => { setLengthForm({ length: "" }); setIsAddLengthModalOpen(true); };
   const closeAddLengthModal = () => setIsAddLengthModalOpen(false);
-  const openEditLengthModal = (length) => { setSelectedLength(length); setLengthForm({ length: length.length }); setIsEditLengthModalOpen(true); };
+  const openEditLengthModal = (length) => { setSelectedLength(length); setLengthForm({ length: length.EventLength.replace('m', '') }); setIsEditLengthModalOpen(true); };
   const closeEditLengthModal = () => setIsEditLengthModalOpen(false);
   const openDeleteLengthModal = (length) => { setSelectedLength(length); setIsDeleteLengthModalOpen(true); };
   const closeDeleteLengthModal = () => setIsDeleteLengthModalOpen(false);
   const handleLengthFormChange = (e) => setLengthForm({ ...lengthForm, [e.target.name]: e.target.value });
-  const handleAddLength = (e) => { e.preventDefault(); setLengths([...lengths, { id: Date.now(), length: lengthForm.length }]); closeAddLengthModal(); };
-  const handleEditLength = (e) => { e.preventDefault(); setLengths(lengths.map(l => l.id === selectedLength.id ? { ...l, ...lengthForm } : l)); closeEditLengthModal(); };
-  const handleDeleteLength = () => { setLengths(lengths.filter(l => l.id !== selectedLength.id)); closeDeleteLengthModal(); };
+  const handleAddLength = async (e) => {
+    e.preventDefault();
+    try {
+      await UserService.addDistance(lengthForm);
+      fetchLengths();
+      closeAddLengthModal();
+    } catch (err) {
+      // handle error
+    }
+  };
+  const handleEditLength = async (e) => {
+    e.preventDefault();
+    try {
+      await UserService.updateDistance(selectedLength.EventLengthID, lengthForm);
+      fetchLengths();
+      closeEditLengthModal();
+    } catch (err) {
+      // handle error
+    }
+  };
+  const handleDeleteLength = async () => {
+    try {
+      await UserService.deactivateDistance(selectedLength.EventLengthID);
+      fetchLengths();
+      closeDeleteLengthModal();
+    } catch (err) {
+      // handle error
+    }
+  };
 
   // Session handlers
   const openAddSessionModal = () => { setSessionForm({ name: "", description: "", date: "", eventIds: [], lengthIds: [] }); setIsAddSessionModalOpen(true); };
@@ -191,9 +242,9 @@ const Settings = () => {
               </thead>
               <tbody>
                 {events.map((event, idx) => (
-                  <tr key={event.id} className="bg-gray-800 border-gray-700 hover:bg-gray-600">
+                  <tr key={event.EventTypeID} className="bg-gray-800 border-gray-700 hover:bg-gray-600">
                     <td className="px-6 py-4 text-white">{idx + 1}</td>
-                    <td className="px-6 py-4 text-white">{event.name}</td>
+                    <td className="px-6 py-4 text-white">{event.EventType}</td>
                     <td className="px-6 py-4">
                       <div className="flex flex-row gap-x-2">
                         <button
@@ -245,9 +296,9 @@ const Settings = () => {
               </thead>
               <tbody>
                 {lengths.map((length, idx) => (
-                  <tr key={length.id} className="bg-gray-800 border-gray-700 hover:bg-gray-600">
+                  <tr key={length.EventLengthID} className="bg-gray-800 border-gray-700 hover:bg-gray-600">
                     <td className="px-6 py-4 text-white">{idx + 1}</td>
-                    <td className="px-6 py-4 text-white">{length.length}</td>
+                    <td className="px-6 py-4 text-white">{length.EventLength}</td>
                     <td className="px-6 py-4">
                       <div className="flex flex-row gap-x-2">
                         <button
@@ -376,33 +427,11 @@ const Settings = () => {
               </div>
               <div className="p-6 space-y-6">
                 <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Event Name</label>
                   <input
                     type="text"
-                    name="name"
-                    value={form.name}
-                    onChange={handleFormChange}
-                    required
-                    className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date</label>
-                  <input
-                    type="date"
-                    name="date"
-                    value={form.date}
-                    onChange={handleFormChange}
-                    required
-                    className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Location</label>
-                  <input
-                    type="text"
-                    name="location"
-                    value={form.location}
+                    name="EventName"
+                    value={form.EventName}
                     onChange={handleFormChange}
                     required
                     className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -454,33 +483,11 @@ const Settings = () => {
               </div>
               <div className="p-6 space-y-6">
                 <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Event Name</label>
                   <input
                     type="text"
-                    name="name"
-                    value={form.name}
-                    onChange={handleFormChange}
-                    required
-                    className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date</label>
-                  <input
-                    type="date"
-                    name="date"
-                    value={form.date}
-                    onChange={handleFormChange}
-                    required
-                    className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Location</label>
-                  <input
-                    type="text"
-                    name="location"
-                    value={form.location}
+                    name="EventName"
+                    value={form.EventName}
                     onChange={handleFormChange}
                     required
                     className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"

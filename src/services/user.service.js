@@ -120,6 +120,31 @@ const getLeaderboardDataForReport = (data) => {
   return api.post(API_URL + "users/getLeaderboardDataForReport", data, { headers: authHeader() });
 }
 
+const addEvent = (data) => {
+  console.log("data ", data);
+  return api.post(API_URL + "users/addEvent", data, { headers: authHeader() });
+}
+
+const addDistance = (data) => {
+  return api.post(API_URL + "users/addDistance", data, { headers: authHeader() });
+}
+
+const updateEvent = (id, data) => {
+  return api.post(API_URL + "users/updateEvent/" + id, data, { headers: authHeader() });
+}
+
+const updateDistance = (id, data) => {
+  return api.post(API_URL + "users/updateDistance/" + id, data, { headers: authHeader() });
+}
+
+const deactivateEvent = (id) => {
+  return api.post(API_URL + "users/deactivateEvent/" + id, { headers: authHeader() });
+}
+
+const deactivateDistance = (id) => {
+  return api.post(API_URL + "users/deactivateDistance/" + id, { headers: authHeader() });
+}
+
 const UserService = {
   notApprovedUsers,
   getAllUsers,
@@ -144,7 +169,13 @@ const UserService = {
   rejectStudent,
   getAttendancedataForReport,
   getTimingDataForReport,
-  getLeaderboardDataForReport
+  getLeaderboardDataForReport,
+  addEvent,
+  addDistance,
+  updateEvent,
+  updateDistance,
+  deactivateEvent,
+  deactivateDistance
 };
 
 export default UserService;

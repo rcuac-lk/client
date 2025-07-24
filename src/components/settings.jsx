@@ -178,8 +178,8 @@ const Settings = () => {
     });
   };
   const handleAddSession = (e) => { e.preventDefault(); setSessions([...sessions, { id: Date.now(), ...sessionForm }]); closeAddSessionModal(); };
-  const handleEditSession = (e) => { e.preventDefault(); setSessions(sessions.map(s => s.id === selectedSession.id ? { ...s, ...sessionForm } : s)); closeEditSessionModal(); };
-  const handleDeleteSession = () => { setSessions(sessions.filter(s => s.id !== selectedSession.id)); closeDeleteSessionModal(); };
+  const handleEditSession = (e) => { e.preventDefault(); setSessions(sessions.map(s => s.SessionID === selectedSession.SessionID ? { ...s, ...sessionForm } : s)); closeEditSessionModal(); };
+  const handleDeleteSession = () => { setSessions(sessions.filter(s => s.SessionID !== selectedSession.SessionID)); closeDeleteSessionModal(); };
 
   return (
     <div className="container mx-auto">
@@ -354,20 +354,20 @@ const Settings = () => {
               </thead>
               <tbody>
                 {sessions.map((session, idx) => (
-                  <tr key={session.id} className="bg-gray-800 border-gray-700 hover:bg-gray-600">
+                  <tr key={session.SessionID} className="bg-gray-800 border-gray-700 hover:bg-gray-600">
                     <td className="px-6 py-4 text-white">{idx + 1}</td>
                     <td className="px-6 py-4 text-white">{session.name}</td>
                     <td className="px-6 py-4">{session.description}</td>
                     <td className="px-6 py-4">{session.date || <span className="italic text-gray-400">N/A</span>}</td>
                     <td className="px-6 py-4">
                       {session.eventIds.map(eid => {
-                        const ev = events.find(ev => ev.id === eid);
+                        const ev = events.find(ev => ev.EventTypeID === eid);
                         return ev ? <span key={eid} className="inline-block bg-gray-700 text-white rounded px-2 py-1 mr-1 text-xs">{ev.name}</span> : null;
                       })}
                     </td>
                     <td className="px-6 py-4">
                       {session.lengthIds && session.lengthIds.map(lid => {
-                        const len = lengths.find(l => l.id === lid);
+                        const len = lengths.find(l => l.EventLengthID === lid);
                         return len ? <span key={lid} className="inline-block bg-gray-700 text-white rounded px-2 py-1 mr-1 text-xs">{len.length}</span> : null;
                       })}
                     </td>
@@ -733,14 +733,14 @@ const Settings = () => {
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Event Types</label>
                   <div className="flex flex-wrap gap-2">
                     {events.map(ev => (
-                      <label key={ev.id} className="flex items-center space-x-2 bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded">
+                      <label key={ev.EventTypeID} className="flex items-center space-x-2 bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded">
                         <input
                           type="checkbox"
-                          checked={sessionForm.eventIds.includes(ev.id)}
-                          onChange={() => handleSessionEventChange(ev.id)}
+                          checked={sessionForm.eventIds.includes(ev.EventTypeID)}
+                          onChange={() => handleSessionEventChange(ev.EventTypeID)}
                           className="form-checkbox h-4 w-4 text-blue-600 dark:bg-gray-700 dark:border-gray-600"
                         />
-                        <span className="text-gray-900 dark:text-white text-sm">{ev.name}</span>
+                        <span className="text-gray-900 dark:text-white text-sm">{ev.eventType}</span>
                       </label>
                     ))}
                   </div>
@@ -749,14 +749,14 @@ const Settings = () => {
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Length</label>
                   <div className="flex flex-wrap gap-2">
                     {lengths.map(len => (
-                      <label key={len.id} className="flex items-center space-x-2 bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded">
+                      <label key={len.EventLengthID} className="flex items-center space-x-2 bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded">
                         <input
                           type="checkbox"
-                          checked={sessionForm.lengthIds.includes(len.id)}
-                          onChange={() => handleSessionLengthChange(len.id)}
+                          checked={sessionForm.lengthIds.includes(len.EventLengthID)}
+                          onChange={() => handleSessionLengthChange(len.EventLengthID)}
                           className="form-checkbox h-4 w-4 text-blue-600 dark:bg-gray-700 dark:border-gray-600"
                         />
-                        <span className="text-gray-900 dark:text-white text-sm">{len.length}</span>
+                        <span className="text-gray-900 dark:text-white text-sm">{len.EventLength}</span>
                       </label>
                     ))}
                   </div>

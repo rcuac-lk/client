@@ -7,7 +7,7 @@ const mockSessions = [
 ];
 
 const Settings = () => {
-  const [activeTab, setActiveTab] = useState("events");
+  const [activeTab, setActiveTab] = useState("sessions");
   const [events, setEvents] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -675,7 +675,7 @@ const Settings = () => {
                           onChange={() => handleSessionEventChange(ev.EventTypeID)}
                           className="form-checkbox h-4 w-4 text-blue-600 dark:bg-gray-700 dark:border-gray-600"
                         />
-                        <span className="text-gray-900 dark:text-white text-sm">{ev.eventType}</span>
+                        <span className="text-gray-900 dark:text-white text-sm">{ev.EventType}</span>
                       </label>
                     ))}
                   </div>
@@ -740,7 +740,7 @@ const Settings = () => {
                           onChange={() => handleSessionEventChange(ev.EventTypeID)}
                           className="form-checkbox h-4 w-4 text-blue-600 dark:bg-gray-700 dark:border-gray-600"
                         />
-                        <span className="text-gray-900 dark:text-white text-sm">{ev.eventType}</span>
+                        <span className="text-gray-900 dark:text-white text-sm">{ev.EventType}</span>
                       </label>
                     ))}
                   </div>

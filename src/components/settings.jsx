@@ -188,17 +188,6 @@ const Settings = () => {
         <div className="flex mb-4 bg-gray-900 rounded-lg overflow-hidden shadow border border-gray-700">
           <button
             className={`px-6 py-3 text-sm font-medium focus:outline-none transition-colors duration-200
-              ${activeTab === "events"
-                ? "text-white bg-gray-800 border-b-2 border-blue-500"
-                : "text-gray-400 hover:text-white hover:bg-gray-800"}
-            `}
-            onClick={() => setActiveTab("events")}
-            style={{ minWidth: 120 }}
-          >
-            Events
-          </button>
-          <button
-            className={`px-6 py-3 text-sm font-medium focus:outline-none transition-colors duration-200
               ${activeTab === "sessions"
                 ? "text-white bg-gray-800 border-b-2 border-blue-500"
                 : "text-gray-400 hover:text-white hover:bg-gray-800"}
@@ -207,6 +196,17 @@ const Settings = () => {
             style={{ minWidth: 120 }}
           >
             Sessions
+          </button>
+          <button
+            className={`px-6 py-3 text-sm font-medium focus:outline-none transition-colors duration-200
+              ${activeTab === "events"
+                ? "text-white bg-gray-800 border-b-2 border-blue-500"
+                : "text-gray-400 hover:text-white hover:bg-gray-800"}
+            `}
+            onClick={() => setActiveTab("events")}
+            style={{ minWidth: 120 }}
+          >
+            Events
           </button>
           <button
             className={`px-6 py-3 text-sm font-medium focus:outline-none transition-colors duration-200

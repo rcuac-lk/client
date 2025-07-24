@@ -668,7 +668,7 @@ const Settings = () => {
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Event Types</label>
                   <div className="flex flex-wrap gap-2">
                     {events.map(ev => (
-                      <label key={ev.id} className="flex items-center space-x-2 bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded">
+                      <label key={ev.EventTypeID} className="flex items-center space-x-2 bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded">
                         <input
                           type="checkbox"
                           checked={sessionForm.eventIds.includes(ev.EventTypeID)}
@@ -684,7 +684,7 @@ const Settings = () => {
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Length</label>
                   <div className="flex flex-wrap gap-2">
                     {lengths.map(len => (
-                      <label key={len.id} className="flex items-center space-x-2 bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded">
+                      <label key={len.EventLengthID} className="flex items-center space-x-2 bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded">
                         <input
                           type="checkbox"
                           checked={sessionForm.lengthIds.includes(len.EventLengthID)}

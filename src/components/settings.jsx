@@ -671,11 +671,11 @@ const Settings = () => {
                       <label key={ev.id} className="flex items-center space-x-2 bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded">
                         <input
                           type="checkbox"
-                          checked={sessionForm.eventIds.includes(ev.id)}
-                          onChange={() => handleSessionEventChange(ev.id)}
+                          checked={sessionForm.eventIds.includes(ev.EventTypeID)}
+                          onChange={() => handleSessionEventChange(ev.EventTypeID)}
                           className="form-checkbox h-4 w-4 text-blue-600 dark:bg-gray-700 dark:border-gray-600"
                         />
-                        <span className="text-gray-900 dark:text-white text-sm">{ev.name}</span>
+                        <span className="text-gray-900 dark:text-white text-sm">{ev.eventType}</span>
                       </label>
                     ))}
                   </div>
@@ -687,11 +687,11 @@ const Settings = () => {
                       <label key={len.id} className="flex items-center space-x-2 bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded">
                         <input
                           type="checkbox"
-                          checked={sessionForm.lengthIds.includes(len.id)}
-                          onChange={() => handleSessionLengthChange(len.id)}
+                          checked={sessionForm.lengthIds.includes(len.EventLengthID)}
+                          onChange={() => handleSessionLengthChange(len.EventLengthID)}
                           className="form-checkbox h-4 w-4 text-blue-600 dark:bg-gray-700 dark:border-gray-600"
                         />
-                        <span className="text-gray-900 dark:text-white text-sm">{len.length}</span>
+                        <span className="text-gray-900 dark:text-white text-sm">{len.EventLength}</span>
                       </label>
                     ))}
                   </div>

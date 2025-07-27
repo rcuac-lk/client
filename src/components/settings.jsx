@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import UserService from "../services/user.service";
-
-const mockSessions = [
-  { id: 1, name: "Morning Swim", description: "Early session", date: "2024-07-10", eventIds: [1], lengthIds: [1] },
-  { id: 2, name: "Evening Dive", description: "Late session", date: null, eventIds: [2], lengthIds: [2] },
-];
+import AuthService from "../services/auth.service";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("sessions");
@@ -16,7 +12,7 @@ const Settings = () => {
   const [form, setForm] = useState({ EventName: "" });
 
   const [lengths, setLengths] = useState([]);
-  const [sessions, setSessions] = useState(mockSessions);
+  const [sessions, setSessions] = useState([]);
   const [isAddLengthModalOpen, setIsAddLengthModalOpen] = useState(false);
   const [isEditLengthModalOpen, setIsEditLengthModalOpen] = useState(false);
   const [isDeleteLengthModalOpen, setIsDeleteLengthModalOpen] = useState(false);
@@ -27,13 +23,30 @@ const Settings = () => {
   const [isEditSessionModalOpen, setIsEditSessionModalOpen] = useState(false);
   const [isDeleteSessionModalOpen, setIsDeleteSessionModalOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
-  const [sessionForm, setSessionForm] = useState({ name: "", description: "", date: "", eventIds: [], lengthIds: [] });
+  const [sessionForm, setSessionForm] = useState({ sessionName: "", description: "", date: "", eventTypes: [], distances: [] });
+  const [isSessionDetailsModalOpen, setIsSessionDetailsModalOpen] = useState(false);
+  const [detailsSession, setDetailsSession] = useState(null);
+  const [addSessionHasDate, setAddSessionHasDate] = useState(false);
+  const [editSessionHasDate, setEditSessionHasDate] = useState(false);
+  const [addSessionDateError, setAddSessionDateError] = useState("");
+  const [editSessionDateError, setEditSessionDateError] = useState("");
 
-  // Fetch events and lengths from API
+  // Fetch events, lengths, and sessions from API
   useEffect(() => {
     fetchEvents();
     fetchLengths();
+    fetchSessions();
   }, []);
+
+  const fetchSessions = async () => {
+    try {
+      const res = await UserService.getSession();
+      console.log("sessions ", res.data);
+      setSessions(res.data.sessions || []);
+    } catch (err) {
+      setSessions([]);
+    }
+  };
 
   const fetchEvents = async () => {
     try {
@@ -152,34 +165,128 @@ const Settings = () => {
   };
 
   // Session handlers
-  const openAddSessionModal = () => { setSessionForm({ name: "", description: "", date: "", eventIds: [], lengthIds: [] }); setIsAddSessionModalOpen(true); };
+  const openAddSessionModal = () => {
+    setSessionForm({ sessionName: "", description: "", date: "", eventTypes: [], distances: [] });
+    setIsAddSessionModalOpen(true);
+    setAddSessionHasDate(false);
+    setAddSessionDateError("");
+  };
   const closeAddSessionModal = () => setIsAddSessionModalOpen(false);
-  const openEditSessionModal = (session) => { setSelectedSession(session); setSessionForm({ name: session.name, description: session.description, date: session.date || "", eventIds: session.eventIds, lengthIds: session.lengthIds || [] }); setIsEditSessionModalOpen(true); };
+  const openEditSessionModal = (session) => {
+    setSelectedSession(session);
+    setSessionForm({
+      sessionName: session.sessionName || "",
+      description: session.description || "",
+      date: (session.properties.dates && session.properties.dates[0]) || "",
+      eventTypes: session.properties.eventTypes || [],
+      distances: session.properties.distances || []
+    });
+    setIsEditSessionModalOpen(true);
+    setEditSessionHasDate(!!((session.properties.dates && session.properties.dates[0])));
+    setEditSessionDateError("");
+  };
   const closeEditSessionModal = () => setIsEditSessionModalOpen(false);
   const openDeleteSessionModal = (session) => { setSelectedSession(session); setIsDeleteSessionModalOpen(true); };
   const closeDeleteSessionModal = () => setIsDeleteSessionModalOpen(false);
   const handleSessionFormChange = (e) => setSessionForm({ ...sessionForm, [e.target.name]: e.target.value });
-  const handleSessionEventChange = (eventId) => {
+  // For eventTypes and distances, handle as arrays of names/values
+  const handleSessionEventChange = (eventName) => {
     setSessionForm((prev) => {
-      const exists = prev.eventIds.includes(eventId);
+      const exists = prev.eventTypes.includes(eventName);
       return {
         ...prev,
-        eventIds: exists ? prev.eventIds.filter(id => id !== eventId) : [...prev.eventIds, eventId],
+        eventTypes: exists ? prev.eventTypes.filter(n => n !== eventName) : [...prev.eventTypes, eventName],
       };
     });
   };
-  const handleSessionLengthChange = (lengthId) => {
+  const handleSessionLengthChange = (distanceValue) => {
     setSessionForm((prev) => {
-      const exists = prev.lengthIds.includes(lengthId);
+      const exists = prev.distances.includes(distanceValue);
       return {
         ...prev,
-        lengthIds: exists ? prev.lengthIds.filter(id => id !== lengthId) : [...prev.lengthIds, lengthId],
+        distances: exists ? prev.distances.filter(n => n !== distanceValue) : [...prev.distances, distanceValue],
       };
     });
   };
-  const handleAddSession = (e) => { e.preventDefault(); setSessions([...sessions, { id: Date.now(), ...sessionForm }]); closeAddSessionModal(); };
-  const handleEditSession = (e) => { e.preventDefault(); setSessions(sessions.map(s => s.SessionID === selectedSession.SessionID ? { ...s, ...sessionForm } : s)); closeEditSessionModal(); };
-  const handleDeleteSession = () => { setSessions(sessions.filter(s => s.SessionID !== selectedSession.SessionID)); closeDeleteSessionModal(); };
+  const handleAddSession = async (e) => {
+    e.preventDefault();
+    setAddSessionDateError("");
+    if (addSessionHasDate && !sessionForm.date) {
+      setAddSessionDateError("Please select a date for the session.");
+      return;
+    }
+    // Map event names and distance values to IDs
+    const eventTypeIds = events
+      .filter(ev => sessionForm.eventTypes.includes(ev.EventType))
+      .map(ev => ev.EventTypeID);
+    const distanceIds = lengths
+      .filter(len => sessionForm.distances.includes(len.EventLength))
+      .map(len => len.EventLengthID);
+    const userId = await AuthService.getCurrentUser();
+    const sessionToAdd = {
+      sessionName: sessionForm.sessionName,
+      description: sessionForm.description,
+      eventTypes: eventTypeIds,
+      distances: distanceIds,
+      date: addSessionHasDate ? sessionForm.date : "",
+      createdByUser: userId.id
+    };
+    try {
+      await UserService.addSession(sessionToAdd);
+      await fetchSessions();
+      closeAddSessionModal();
+    } catch (err) {
+      // handle error
+    }
+  };
+  const handleEditSession = async (e) => {
+    e.preventDefault();
+    setEditSessionDateError("");
+    if (editSessionHasDate && !sessionForm.date) {
+      setEditSessionDateError("Please select a date for the session.");
+      return;
+    }
+    // Map event names and distance values to IDs
+    const eventTypeIds = events
+      .filter(ev => sessionForm.eventTypes.includes(ev.EventType))
+      .map(ev => ev.EventTypeID);
+    const distanceIds = lengths
+      .filter(len => sessionForm.distances.includes(len.EventLength))
+      .map(len => len.EventLengthID);
+    const sessionToEdit = {
+      sessionId: selectedSession.id,
+      sessionName: sessionForm.sessionName,
+      description: sessionForm.description,
+      eventTypes: eventTypeIds,
+      distances: distanceIds,
+      date: editSessionHasDate ? sessionForm.date : ""
+    };
+    try {
+      await UserService.modifySession(sessionToEdit);
+      await fetchSessions();
+      closeEditSessionModal();
+    } catch (err) {
+      // handle error
+    }
+  };
+  const handleDeleteSession = async () => {
+    try {
+      await UserService.deleteSession(selectedSession.id);
+      await fetchSessions();
+      closeDeleteSessionModal();
+    } catch (err) {
+      // handle error
+    }
+  };
+
+  const openSessionDetailsModal = (session) => {
+    setDetailsSession(session);
+    setIsSessionDetailsModalOpen(true);
+  };
+  const closeSessionDetailsModal = () => {
+    setIsSessionDetailsModalOpen(false);
+    setDetailsSession(null);
+  };
 
   return (
     <div className="container mx-auto">
@@ -347,29 +454,24 @@ const Settings = () => {
                   <th className="px-6 py-3">Session Name</th>
                   <th className="px-6 py-3">Description</th>
                   <th className="px-6 py-3">Date</th>
-                  <th className="px-6 py-3">Event Types</th>
-                  <th className="px-6 py-3">Length</th>
+                  <th className="px-6 py-3">Details</th>
                   <th className="px-6 py-3">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {sessions.map((session, idx) => (
-                  <tr key={session.SessionID} className="bg-gray-800 border-gray-700 hover:bg-gray-600">
+                  <tr key={session.id} className="bg-gray-800 border-gray-700 hover:bg-gray-600">
                     <td className="px-6 py-4 text-white">{idx + 1}</td>
-                    <td className="px-6 py-4 text-white">{session.name}</td>
+                    <td className="px-6 py-4 text-white">{session.sessionName}</td>
                     <td className="px-6 py-4">{session.description}</td>
-                    <td className="px-6 py-4">{session.date || <span className="italic text-gray-400">N/A</span>}</td>
+                    <td className="px-6 py-4">{(session.properties.dates && session.properties.dates[0]) || <span className="italic text-gray-400">N/A</span>}</td>
                     <td className="px-6 py-4">
-                      {session.eventIds.map(eid => {
-                        const ev = events.find(ev => ev.EventTypeID === eid);
-                        return ev ? <span key={eid} className="inline-block bg-gray-700 text-white rounded px-2 py-1 mr-1 text-xs">{ev.name}</span> : null;
-                      })}
-                    </td>
-                    <td className="px-6 py-4">
-                      {session.lengthIds && session.lengthIds.map(lid => {
-                        const len = lengths.find(l => l.EventLengthID === lid);
-                        return len ? <span key={lid} className="inline-block bg-gray-700 text-white rounded px-2 py-1 mr-1 text-xs">{len.length}</span> : null;
-                      })}
+                      <button
+                        onClick={() => openSessionDetailsModal(session)}
+                        className="text-white bg-indigo-700 hover:bg-indigo-800 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-4 py-2 focus:outline-none dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800"
+                      >
+                        View More Details
+                      </button>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-row gap-x-2">
@@ -391,7 +493,7 @@ const Settings = () => {
                 ))}
                 {sessions.length === 0 && (
                   <tr>
-                    <td colSpan="7" className="px-6 py-4 text-center text-gray-400">
+                    <td colSpan="6" className="px-6 py-4 text-center text-gray-400">
                       No sessions found.
                     </td>
                   </tr>
@@ -654,16 +756,31 @@ const Settings = () => {
               <div className="p-6 space-y-6">
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Session Name</label>
-                  <input type="text" name="name" value={sessionForm.name} onChange={handleSessionFormChange} required className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                  <input type="text" name="sessionName" value={sessionForm.sessionName} onChange={handleSessionFormChange} required className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
-                  <input type="text" name="description" value={sessionForm.description} onChange={handleSessionFormChange} required className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                  <input type="text" name="description" value={sessionForm.description} onChange={handleSessionFormChange} className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                 </div>
+                <div className="flex items-center mb-2">
+                  <input
+                    type="checkbox"
+                    id="addSessionHasDate"
+                    checked={addSessionHasDate}
+                    onChange={e => setAddSessionHasDate(e.target.checked)}
+                    className="form-checkbox h-4 w-4 text-blue-600 dark:bg-gray-700 dark:border-gray-600 mr-2"
+                  />
+                  <label htmlFor="addSessionHasDate" className="text-gray-900 dark:text-white text-sm">Set Date for Session</label>
+                </div>
+                {addSessionHasDate && (
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date</label>
                   <input type="date" name="date" value={sessionForm.date} onChange={handleSessionFormChange} className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                 </div>
+                )}
+                {addSessionHasDate && addSessionDateError && (
+                  <div className="text-red-500 text-sm mb-2">{addSessionDateError}</div>
+                )}
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Event Types</label>
                   <div className="flex flex-wrap gap-2">
@@ -671,8 +788,8 @@ const Settings = () => {
                       <label key={ev.EventTypeID} className="flex items-center space-x-2 bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded">
                         <input
                           type="checkbox"
-                          checked={sessionForm.eventIds.includes(ev.EventTypeID)}
-                          onChange={() => handleSessionEventChange(ev.EventTypeID)}
+                          checked={sessionForm.eventTypes.includes(ev.EventType)}
+                          onChange={() => handleSessionEventChange(ev.EventType)}
                           className="form-checkbox h-4 w-4 text-blue-600 dark:bg-gray-700 dark:border-gray-600"
                         />
                         <span className="text-gray-900 dark:text-white text-sm">{ev.EventType}</span>
@@ -687,8 +804,8 @@ const Settings = () => {
                       <label key={len.EventLengthID} className="flex items-center space-x-2 bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded">
                         <input
                           type="checkbox"
-                          checked={sessionForm.lengthIds.includes(len.EventLengthID)}
-                          onChange={() => handleSessionLengthChange(len.EventLengthID)}
+                          checked={sessionForm.distances.includes(len.EventLength)}
+                          onChange={() => handleSessionLengthChange(len.EventLength)}
                           className="form-checkbox h-4 w-4 text-blue-600 dark:bg-gray-700 dark:border-gray-600"
                         />
                         <span className="text-gray-900 dark:text-white text-sm">{len.EventLength}</span>
@@ -719,16 +836,31 @@ const Settings = () => {
               <div className="p-6 space-y-6">
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Session Name</label>
-                  <input type="text" name="name" value={sessionForm.name} onChange={handleSessionFormChange} required className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                  <input type="text" name="sessionName" value={sessionForm.sessionName} onChange={handleSessionFormChange} required className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
-                  <input type="text" name="description" value={sessionForm.description} onChange={handleSessionFormChange} required className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                  <input type="text" name="description" value={sessionForm.description} onChange={handleSessionFormChange} className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                 </div>
+                <div className="flex items-center mb-2">
+                  <input
+                    type="checkbox"
+                    id="editSessionHasDate"
+                    checked={editSessionHasDate}
+                    onChange={e => setEditSessionHasDate(e.target.checked)}
+                    className="form-checkbox h-4 w-4 text-blue-600 dark:bg-gray-700 dark:border-gray-600 mr-2"
+                  />
+                  <label htmlFor="editSessionHasDate" className="text-gray-900 dark:text-white text-sm">Set Date for Session</label>
+                </div>
+                {editSessionHasDate && (
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date</label>
                   <input type="date" name="date" value={sessionForm.date} onChange={handleSessionFormChange} className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                 </div>
+                )}
+                {editSessionHasDate && editSessionDateError && (
+                  <div className="text-red-500 text-sm mb-2">{editSessionDateError}</div>
+                )}
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Event Types</label>
                   <div className="flex flex-wrap gap-2">
@@ -736,8 +868,8 @@ const Settings = () => {
                       <label key={ev.EventTypeID} className="flex items-center space-x-2 bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded">
                         <input
                           type="checkbox"
-                          checked={sessionForm.eventIds.includes(ev.EventTypeID)}
-                          onChange={() => handleSessionEventChange(ev.EventTypeID)}
+                          checked={sessionForm.eventTypes.includes(ev.EventType)}
+                          onChange={() => handleSessionEventChange(ev.EventType)}
                           className="form-checkbox h-4 w-4 text-blue-600 dark:bg-gray-700 dark:border-gray-600"
                         />
                         <span className="text-gray-900 dark:text-white text-sm">{ev.EventType}</span>
@@ -752,8 +884,8 @@ const Settings = () => {
                       <label key={len.EventLengthID} className="flex items-center space-x-2 bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded">
                         <input
                           type="checkbox"
-                          checked={sessionForm.lengthIds.includes(len.EventLengthID)}
-                          onChange={() => handleSessionLengthChange(len.EventLengthID)}
+                          checked={sessionForm.distances.includes(len.EventLength)}
+                          onChange={() => handleSessionLengthChange(len.EventLength)}
                           className="form-checkbox h-4 w-4 text-blue-600 dark:bg-gray-700 dark:border-gray-600"
                         />
                         <span className="text-gray-900 dark:text-white text-sm">{len.EventLength}</span>
@@ -787,6 +919,61 @@ const Settings = () => {
                 </div>
                 <button type="button" onClick={handleDeleteSession} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Yes, delete</button>
                 <button type="button" onClick={closeDeleteSessionModal} className="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">No, cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Session Details Modal */}
+      {isSessionDetailsModalOpen && detailsSession && (
+        <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+          <div className="relative w-full max-w-md max-h-full">
+            <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
+              <button
+                type="button"
+                onClick={closeSessionDetailsModal}
+                className="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+              >
+                <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                </svg>
+                <span className="sr-only">Close modal</span>
+              </button>
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Session Details</h3>
+                <div className="mb-2">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Event Types:</span>
+                  <ul className="list-disc list-inside mt-1">
+                    {detailsSession.properties.eventTypes && detailsSession.properties.eventTypes.length > 0 ? (
+                      detailsSession.properties.eventTypes.map((et, i) => (
+                        <li key={i} className="text-gray-900 dark:text-white">{et}</li>
+                      ))
+                    ) : (
+                      <li className="text-gray-400">None</li>
+                    )}
+                  </ul>
+                </div>
+                <div className="mb-2">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Lengths:</span>
+                  <ul className="list-disc list-inside mt-1">
+                    {detailsSession.properties.distances && detailsSession.properties.distances.length > 0 ? (
+                      detailsSession.properties.distances.map((d, i) => (
+                        <li key={i} className="text-gray-900 dark:text-white">{d}</li>
+                      ))
+                    ) : (
+                      <li className="text-gray-400">None</li>
+                    )}
+                  </ul>
+                </div>
+                <div className="flex justify-end mt-4">
+                  <button
+                    type="button"
+                    onClick={closeSessionDetailsModal}
+                    className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>

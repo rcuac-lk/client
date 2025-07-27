@@ -145,6 +145,22 @@ const deactivateDistance = (id) => {
   return api.post(API_URL + "users/deactivateDistance/" + id, { headers: authHeader() });
 }
 
+const getSession = () => {
+  return api.get(API_URL + "users/getSession", { headers: authHeader() });
+}
+
+const modifySession = (data) => {
+  return api.post(API_URL + "users/modifySession", data, { headers: authHeader() });
+}
+
+const deleteSession = (id) => {
+  return api.post(API_URL + "users/deleteSession/" + id, { headers: authHeader() });
+}
+
+const addSession = (data) => {
+  return api.post(API_URL + "users/addSession", data, { headers: authHeader() });
+}
+
 const UserService = {
   notApprovedUsers,
   getAllUsers,
@@ -175,7 +191,11 @@ const UserService = {
   updateEvent,
   updateDistance,
   deactivateEvent,
-  deactivateDistance
+  deactivateDistance,
+  getSession,
+  modifySession,
+  deleteSession,
+  addSession
 };
 
 export default UserService;

@@ -25,6 +25,10 @@ const UserListComponent = () => {
   const [focusedStudentId, setFocusedStudentId] = useState(null);
   const [studentInputTouched, setStudentInputTouched] = useState({});
   const [studentTimeStatus, setStudentTimeStatus] = useState({});
+  const [dateLocked, setDateLocked] = useState(false);
+  const [eventOptions, setEventOptions] = useState([]);
+  const [lengthOptions, setLengthOptions] = useState([]);
+  const [sessionSelected, setSessionSelected] = useState(false);
 
   /** functions */
   const getAgeGroups = async() => {
@@ -40,15 +44,18 @@ const UserListComponent = () => {
     setCustomDate(`${year}-${month}-${day}`);
   }, []);
   
-  const getSessionData = async() => { 
-    const response = await UserService.getSessionData();
-    setSessions(response.data.sessions);
-  
-    if (response.data && response.data.sessions.length > 0) {
-      setSessionFilter(response.data.sessions[0].SessionID);
-      setCustomSession(response.data.sessions[0].SessionName);
-    }
-  }
+  const getSessionData = async () => {
+    const response = await UserService.getSession();
+    setSessions(response.data.sessions || []);
+    // Do not auto-select a session
+    setSessionFilter("");
+    setCustomSession("");
+    setSessionSelected(false);
+    setEventOptions([]);
+    setLengthOptions([]);
+    setCustomDate("");
+    setDateLocked(false);
+  };
 
   const getEventTypes = async() => { 
     const response = await UserService.getEventTypes();
@@ -100,8 +107,8 @@ const UserListComponent = () => {
   const handleSessionChange = async (e) => {
     const newSession = e.target.value;
     setSessionFilter(newSession);
-    const selected = sessions.find(s => String(s.SessionID) === String(newSession));
-    setCustomSession(selected ? selected.SessionName : "");
+    const selected = sessions.find(s => String(s.id) === String(newSession));
+    setCustomSession(selected ? selected.sessionName : "");
     await getStudentsData(customDate, newSession, ageFilter);
   };
 
@@ -445,6 +452,46 @@ const UserListComponent = () => {
     setCustomSession(sessionFilter);
   }, [sessionFilter]);
 
+  // When sessionFilter changes, update event/length/date options
+  useEffect(() => {
+    if (!sessionFilter) {
+      setSessionSelected(false);
+      setEventOptions([]);
+      setLengthOptions([]);
+      setCustomDate("");
+      setDateLocked(false);
+      return;
+    }
+    setSessionSelected(true);
+    const selected = sessions.find(s => String(s.id) === String(sessionFilter));
+    setCustomSession(selected ? selected.sessionName : "");
+    // Events
+    if (selected && selected.properties && selected.properties.eventTypes && selected.properties.eventTypes.length > 0) {
+      setEventOptions(eventTypes.filter(ev => selected.properties.eventTypes.includes(ev.EventType)));
+    } else {
+      setEventOptions(eventTypes);
+    }
+    // Lengths
+    if (selected && selected.properties && selected.properties.distances && selected.properties.distances.length > 0) {
+      setLengthOptions(eventLengths.filter(len => selected.properties.distances.includes(len.EventLength)));
+    } else {
+      setLengthOptions(eventLengths);
+    }
+    // Date
+    if (selected && selected.properties && selected.properties.dates && selected.properties.dates[0]) {
+      setCustomDate(selected.properties.dates[0]);
+      setDateLocked(true);
+    } else {
+      // Set to today if no specific date
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      setCustomDate(`${year}-${month}-${day}`);
+      setDateLocked(false);
+    }
+  }, [sessionFilter, sessions, eventTypes, eventLengths]);
+
   return (
     <div>
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg mt-16">
@@ -486,9 +533,10 @@ const UserListComponent = () => {
               onChange={handleSessionChange}
               className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-60 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
+              <option value="">Select Session</option>
               {sessions.map((session) => (
-                <option key={session.SessionID} value={session.SessionID}>
-                  {session.SessionName}
+                <option key={session.id} value={session.id}>
+                  {session.sessionName}
                 </option>
               ))}
             </select>
@@ -498,7 +546,9 @@ const UserListComponent = () => {
               type="date" 
               value={customDate}
               onChange={handleDateChange}
-              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-40 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-40 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              disabled={!sessionSelected || dateLocked}
+            />
 
             {/* Event Filter */}
             <select
@@ -506,8 +556,10 @@ const UserListComponent = () => {
               value={eventFilter}
               onChange={handleEventFilterChange}
               className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-40 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              disabled={!sessionSelected}
             >
-              {eventTypes.map((event) => (
+              <option value="">Select Event</option>
+              {eventOptions.map((event) => (
                 <option key={event.EventTypeID} value={event.EventTypeID}>
                   {event.EventType}
                 </option>
@@ -519,8 +571,10 @@ const UserListComponent = () => {
               value={lengthFilter}
               onChange={handleLengthFilterChange}
               className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-30 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              disabled={!sessionSelected}
             >
-              {eventLengths.map((length) => (
+              <option value="">Select Length</option>
+              {lengthOptions.map((length) => (
                 <option key={length.EventLengthID} value={length.EventLengthID}>
                   {length.EventLength}
                 </option>

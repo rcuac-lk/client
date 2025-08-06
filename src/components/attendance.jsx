@@ -20,6 +20,7 @@ const UserListComponent = () => {
   const [customDate, setCustomDate] = useState("");
   const [showNewSessionDialog, setShowNewSessionDialog] = useState(false);
   const [newSessionName, setNewSessionName] = useState("");
+  const [dateLocked, setDateLocked] = useState(false);
 
   const getAgeGroups = async() => {
     const response = await UserService.ageGroups();
@@ -35,14 +36,23 @@ const UserListComponent = () => {
     setCustomDate(`${year}-${month}-${day}`);
   }, []);
 
-  const getSessionData = async() => { 
-    const response = await UserService.getSessionData();
-    setSessions(response.data.sessions);
+  const getSessionData = async () => {
+    const response = await UserService.getSession();
+    // response.data.sessions is an array of session objects
+    setSessions(response.data.sessions || []);
     if (response.data && response.data.sessions.length > 0) {
-      setSessionFilter(response.data.sessions[0].SessionID);
-      setCustomSession(response.data.sessions[0].SessionName);
+      const firstSession = response.data.sessions[0];
+      setSessionFilter(firstSession.id);
+      setCustomSession(firstSession.sessionName);
+      // If session has a date, lock in to that date
+      if (firstSession.properties && firstSession.properties.dates && firstSession.properties.dates[0]) {
+        setCustomDate(firstSession.properties.dates[0]);
+        setDateLocked(true);
+      } else {
+        setDateLocked(false);
+      }
     }
-  }
+  };
 
   const getStudentsData = async (date, sessionId, ageFilter) => {
     const response = await UserService.getAttendancedata(date, sessionId, ageFilter);
@@ -147,8 +157,14 @@ const UserListComponent = () => {
   }, []);
 
   useEffect(() => {
-    const selected = sessions.find(s => String(s.SessionID) === String(sessionFilter));
-    setCustomSession(selected ? selected.SessionName : "");
+    const selected = sessions.find(s => String(s.id) === String(sessionFilter));
+    setCustomSession(selected ? selected.sessionName : "");
+    if (selected && selected.properties && selected.properties.dates && selected.properties.dates[0]) {
+      setCustomDate(selected.properties.dates[0]);
+      setDateLocked(true);
+    } else {
+      setDateLocked(false);
+    }
   }, [sessionFilter, sessions]);
 
   const createNewSession = (sessionName, date) => {
@@ -255,6 +271,7 @@ const UserListComponent = () => {
           </div>
           <div className="flex space-x-2 px-2 py-4">
             {/* Custom Session Search Box */}
+            {/*
             <div className="relative">
               <input
                 type="text"
@@ -301,19 +318,20 @@ const UserListComponent = () => {
                 </div>
               )}
             </div>
+*/}
             {/* Session Filter Dropdown */}
             <select
               value={sessionFilter}
               onChange={(e) => {
                 setSessionFilter(e.target.value);
-                const selected = sessions.find(s => String(s.SessionID) === String(e.target.value));
-                setCustomSession(selected ? selected.SessionName : "");
+                const selected = sessions.find(s => String(s.id) === String(e.target.value));
+                setCustomSession(selected ? selected.sessionName : "");
               }}
               className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               {sessions.map((session) => (
-                <option key={session.SessionID} value={session.SessionID}>
-                  {session.SessionName}
+                <option key={session.id} value={session.id}>
+                  {session.sessionName}
                 </option>
               ))}
             </select>
@@ -321,8 +339,10 @@ const UserListComponent = () => {
             <input 
               type="date" 
               value={customDate}
-              onChange={(e) => setCustomDate(e.target.value)}
-              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+              onChange={e => setCustomDate(e.target.value)}
+              className="block h-10 p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              disabled={dateLocked}
+            />
           </div>
         </div>
         <table className="w-full text-sm text-left rtl:text-right text-gray-400">

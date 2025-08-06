@@ -31,6 +31,14 @@ const Settings = () => {
   const [addSessionDateError, setAddSessionDateError] = useState("");
   const [editSessionDateError, setEditSessionDateError] = useState("");
 
+  // Add error states
+  const [addEventError, setAddEventError] = useState("");
+  const [editEventError, setEditEventError] = useState("");
+  const [addLengthError, setAddLengthError] = useState("");
+  const [editLengthError, setEditLengthError] = useState("");
+  const [addSessionError, setAddSessionError] = useState("");
+  const [editSessionError, setEditSessionError] = useState("");
+
   // Fetch events, lengths, and sessions from API
   useEffect(() => {
     fetchEvents();
@@ -94,24 +102,26 @@ const Settings = () => {
   // Add event
   const handleAdd = async (e) => {
     e.preventDefault();
+    setAddEventError("");
     try {
       await UserService.addEvent(form);
       fetchEvents();
       closeAddModal();
     } catch (err) {
-      // handle error
+      setAddEventError(err?.response?.data?.message || "Failed to add event.");
     }
   };
 
   // Edit event
   const handleEdit = async (e) => {
     e.preventDefault();
+    setEditEventError("");
     try {
       await UserService.updateEvent(selectedEvent.EventTypeID, form);
       fetchEvents();
       closeEditModal();
     } catch (err) {
-      // handle error
+      setEditEventError(err?.response?.data?.message || "Failed to update event.");
     }
   };
 
@@ -136,22 +146,24 @@ const Settings = () => {
   const handleLengthFormChange = (e) => setLengthForm({ ...lengthForm, [e.target.name]: e.target.value });
   const handleAddLength = async (e) => {
     e.preventDefault();
+    setAddLengthError("");
     try {
       await UserService.addDistance(lengthForm);
       fetchLengths();
       closeAddLengthModal();
     } catch (err) {
-      // handle error
+      setAddLengthError(err?.response?.data?.message || "Failed to add length.");
     }
   };
   const handleEditLength = async (e) => {
     e.preventDefault();
+    setEditLengthError("");
     try {
       await UserService.updateDistance(selectedLength.EventLengthID, lengthForm);
       fetchLengths();
       closeEditLengthModal();
     } catch (err) {
-      // handle error
+      setEditLengthError(err?.response?.data?.message || "Failed to update length.");
     }
   };
   const handleDeleteLength = async () => {
@@ -211,6 +223,7 @@ const Settings = () => {
   const handleAddSession = async (e) => {
     e.preventDefault();
     setAddSessionDateError("");
+    setAddSessionError("");
     if (addSessionHasDate && !sessionForm.date) {
       setAddSessionDateError("Please select a date for the session.");
       return;
@@ -236,12 +249,13 @@ const Settings = () => {
       await fetchSessions();
       closeAddSessionModal();
     } catch (err) {
-      // handle error
+      setAddSessionError(err?.response?.data?.message || "Failed to add session.");
     }
   };
   const handleEditSession = async (e) => {
     e.preventDefault();
     setEditSessionDateError("");
+    setEditSessionError("");
     if (editSessionHasDate && !sessionForm.date) {
       setEditSessionDateError("Please select a date for the session.");
       return;
@@ -266,7 +280,7 @@ const Settings = () => {
       await fetchSessions();
       closeEditSessionModal();
     } catch (err) {
-      // handle error
+      setEditSessionError(err?.response?.data?.message || "Failed to update session.");
     }
   };
   const handleDeleteSession = async () => {
@@ -539,6 +553,7 @@ const Settings = () => {
                     className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   />
                 </div>
+                {addEventError && <div className="text-red-500 text-sm mb-2">{addEventError}</div>}
               </div>
               <div className="flex items-center p-6 space-x-2 border-t rounded-b border-gray-600">
                 <button
@@ -595,6 +610,7 @@ const Settings = () => {
                     className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   />
                 </div>
+                {editEventError && <div className="text-red-500 text-sm mb-2">{editEventError}</div>}
               </div>
               <div className="flex items-center p-6 space-x-2 border-t rounded-b border-gray-600">
                 <button
@@ -640,10 +656,7 @@ const Settings = () => {
                 </h3>
                 <div className="mb-4 text-center">
                   <p className="text-gray-600 dark:text-gray-300">
-                    <strong>Name:</strong> {selectedEvent?.name}
-                  </p>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    <strong>Date:</strong> {selectedEvent?.date}
+                    <strong>Name:</strong> {selectedEvent?.EventType || selectedEvent?.EventName}
                   </p>
                 </div>
                 <button
@@ -686,6 +699,7 @@ const Settings = () => {
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Length</label>
                   <input type="text" name="length" value={lengthForm.length} onChange={handleLengthFormChange} required className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                 </div>
+                {addLengthError && <div className="text-red-500 text-sm mb-2">{addLengthError}</div>}
               </div>
               <div className="flex items-center p-6 space-x-2 border-t rounded-b border-gray-600">
                 <button type="submit" className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Add</button>
@@ -711,6 +725,7 @@ const Settings = () => {
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Length</label>
                   <input type="text" name="length" value={lengthForm.length} onChange={handleLengthFormChange} required className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                 </div>
+                {editLengthError && <div className="text-red-500 text-sm mb-2">{editLengthError}</div>}
               </div>
               <div className="flex items-center p-6 space-x-2 border-t rounded-b border-gray-600">
                 <button type="submit" className="text-white bg-yellow-600 hover:bg-yellow-700 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-800">Save Changes</button>
@@ -732,7 +747,7 @@ const Settings = () => {
                 <svg className="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
                 <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete this length?</h3>
                 <div className="mb-4 text-center">
-                  <p className="text-gray-600 dark:text-gray-300"><strong>Length:</strong> {selectedLength?.length}</p>
+                  <p className="text-gray-600 dark:text-gray-300"><strong>Length:</strong> {selectedLength?.EventLength || selectedLength?.length}</p>
                 </div>
                 <button type="button" onClick={handleDeleteLength} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Yes, delete</button>
                 <button type="button" onClick={closeDeleteLengthModal} className="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">No, cancel</button>
@@ -813,6 +828,7 @@ const Settings = () => {
                     ))}
                   </div>
                 </div>
+                {addSessionError && <div className="text-red-500 text-sm mb-2">{addSessionError}</div>}
               </div>
               <div className="flex items-center p-6 space-x-2 border-t rounded-b border-gray-600">
                 <button type="submit" className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Add</button>
@@ -893,6 +909,7 @@ const Settings = () => {
                     ))}
                   </div>
                 </div>
+                {editSessionError && <div className="text-red-500 text-sm mb-2">{editSessionError}</div>}
               </div>
               <div className="flex items-center p-6 space-x-2 border-t rounded-b border-gray-600">
                 <button type="submit" className="text-white bg-yellow-600 hover:bg-yellow-700 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-800">Save Changes</button>
@@ -914,8 +931,11 @@ const Settings = () => {
                 <svg className="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
                 <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete this session?</h3>
                 <div className="mb-4 text-center">
-                  <p className="text-gray-600 dark:text-gray-300"><strong>Name:</strong> {selectedSession?.name}</p>
+                  <p className="text-gray-600 dark:text-gray-300"><strong>Name:</strong> {selectedSession?.sessionName}</p>
                   <p className="text-gray-600 dark:text-gray-300"><strong>Description:</strong> {selectedSession?.description}</p>
+                  {selectedSession?.properties?.dates && selectedSession.properties.dates[0] && (
+                    <p className="text-gray-600 dark:text-gray-300"><strong>Date:</strong> {selectedSession.properties.dates[0]}</p>
+                  )}
                 </div>
                 <button type="button" onClick={handleDeleteSession} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Yes, delete</button>
                 <button type="button" onClick={closeDeleteSessionModal} className="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">No, cancel</button>

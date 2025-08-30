@@ -363,11 +363,11 @@ const UserListComponent = () => {
                     <div className="text-base font-semibold">
                       {student.FirstName} {student.LastName}
                     </div>
-                    {student.bestTiming && (
+                    {/* {student.bestTiming && (
                       <div className="text-sm text-gray-300">
                         Best Time: {student.bestTiming}
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </th>
                 <td className="px-6 py-4">{student.AgeCategory}</td>

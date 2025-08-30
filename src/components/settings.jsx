@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import UserService from "../services/user.service";
 import AuthService from "../services/auth.service";
 
-const Settings = () => {
+const Settings = (props) => {
   const [activeTab, setActiveTab] = useState("sessions");
   const [events, setEvents] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -38,6 +38,10 @@ const Settings = () => {
   const [editLengthError, setEditLengthError] = useState("");
   const [addSessionError, setAddSessionError] = useState("");
   const [editSessionError, setEditSessionError] = useState("");
+
+  const userRole = props.role;
+  console.log("userRole ", userRole);
+  const isAdmin = userRole === "Admin";
 
   // Fetch events, lengths, and sessions from API
   useEffect(() => {
@@ -346,19 +350,19 @@ const Settings = () => {
           <div className="relative overflow-x-auto shadow-md sm:rounded-lg bg-gray-900">
             <div className="flex justify-between items-center py-4 px-4">
               <h1 className="text-xl font-semibold text-white">Events</h1>
-              <button
+              {isAdmin && <button
                 onClick={openAddModal}
                 className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
               >
                 Add Event
-              </button>
+              </button>}
             </div>
             <table className="w-full text-sm text-left text-gray-400">
               <thead className="text-xs uppercase bg-gray-700 text-gray-400">
                 <tr>
                   <th className="px-6 py-3">#</th>
                   <th className="px-6 py-3">Event Name</th>
-                  <th className="px-6 py-3">Action</th>
+                  {isAdmin && <th className="px-6 py-3">Action</th>}
                 </tr>
               </thead>
               <tbody>
@@ -366,6 +370,7 @@ const Settings = () => {
                   <tr key={event.EventTypeID} className="bg-gray-800 border-gray-700 hover:bg-gray-600">
                     <td className="px-6 py-4 text-white">{idx + 1}</td>
                     <td className="px-6 py-4 text-white">{event.EventType}</td>
+                    {isAdmin && (
                     <td className="px-6 py-4">
                       <div className="flex flex-row gap-x-2">
                         <button
@@ -382,6 +387,7 @@ const Settings = () => {
                         </button>
                       </div>
                     </td>
+                    )}
                   </tr>
                 ))}
                 {events.length === 0 && (
@@ -400,19 +406,19 @@ const Settings = () => {
           <div className="relative overflow-x-auto shadow-md sm:rounded-lg bg-gray-900">
             <div className="flex justify-between items-center py-4 px-4">
               <h1 className="text-xl font-semibold text-white">Length</h1>
-              <button
+              {isAdmin && <button
                 onClick={openAddLengthModal}
                 className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
               >
                 Add Length
-              </button>
+              </button>}
             </div>
             <table className="w-full text-sm text-left text-gray-400">
               <thead className="text-xs uppercase bg-gray-700 text-gray-400">
                 <tr>
                   <th className="px-6 py-3">#</th>
                   <th className="px-6 py-3">Length</th>
-                  <th className="px-6 py-3">Action</th>
+                  {isAdmin && <th className="px-6 py-3">Action</th>}
                 </tr>
               </thead>
               <tbody>
@@ -420,6 +426,7 @@ const Settings = () => {
                   <tr key={length.EventLengthID} className="bg-gray-800 border-gray-700 hover:bg-gray-600">
                     <td className="px-6 py-4 text-white">{idx + 1}</td>
                     <td className="px-6 py-4 text-white">{length.EventLength}</td>
+                    {isAdmin && (
                     <td className="px-6 py-4">
                       <div className="flex flex-row gap-x-2">
                         <button
@@ -436,6 +443,7 @@ const Settings = () => {
                         </button>
                       </div>
                     </td>
+                    )}
                   </tr>
                 ))}
                 {lengths.length === 0 && (
@@ -454,12 +462,12 @@ const Settings = () => {
           <div className="relative overflow-x-auto shadow-md sm:rounded-lg bg-gray-900">
             <div className="flex justify-between items-center py-4 px-4">
               <h1 className="text-xl font-semibold text-white">Sessions</h1>
-              <button
+              {isAdmin && <button
                 onClick={openAddSessionModal}
                 className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
               >
                 Add Session
-              </button>
+              </button>}
             </div>
             <table className="w-full text-sm text-left text-gray-400">
               <thead className="text-xs uppercase bg-gray-700 text-gray-400">
@@ -469,7 +477,7 @@ const Settings = () => {
                   <th className="px-6 py-3">Description</th>
                   <th className="px-6 py-3">Date</th>
                   <th className="px-6 py-3">Details</th>
-                  <th className="px-6 py-3">Action</th>
+                  {isAdmin && <th className="px-6 py-3">Action</th>}
                 </tr>
               </thead>
               <tbody>
@@ -487,6 +495,7 @@ const Settings = () => {
                         View More Details
                       </button>
                     </td>
+                    {isAdmin && (
                     <td className="px-6 py-4">
                       <div className="flex flex-row gap-x-2">
                         <button
@@ -503,6 +512,7 @@ const Settings = () => {
                         </button>
                       </div>
                     </td>
+                    )}
                   </tr>
                 ))}
                 {sessions.length === 0 && (

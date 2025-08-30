@@ -528,7 +528,7 @@ const Dashboard = () => {
           {selectedSection === "attendance" && <Attendance />}
           {selectedSection === "timing" && <Timing />}
           {selectedSection === "reports" && <Reports role={role} />}
-          {selectedSection === "settings" && <Settings />}
+          {selectedSection === "settings" && <Settings role={role} />}
         </div>
       </div>
 

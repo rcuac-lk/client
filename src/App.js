@@ -13,7 +13,6 @@ import SwimmingPage from './pages/swimmingPage.jsx';
 import DivingPage from './pages/divingPage.jsx';
 import WaterPoloPage from './pages/waterPoloPage.jsx';
 import Dashboard from './pages/dashboard.jsx';
-import ChildDashboard from './pages/childDashboard.jsx';
 import CoachDashboard from './pages/coachDashboard.jsx';
 import ManagerDashboard from './pages/managerDashboard.jsx';
 import ParentDashboard from './pages/parentDashboard.jsx';
@@ -30,7 +29,6 @@ function App() {
           <Route path="/diving" element={<DivingPage />} />
           <Route path="/water-polo" element={<WaterPoloPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/child" element={<ChildDashboard />} />
           <Route path="/coach" element={<CoachDashboard />} />
           <Route path="/manager" element={<ManagerDashboard />} />
           <Route path="/parent" element={<ParentDashboard />} />

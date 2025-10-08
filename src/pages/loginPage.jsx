@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import AuthService from '../services/auth.service';
 
 const LoginPage = () => {
@@ -67,6 +67,10 @@ const LoginPage = () => {
                 </div> */}
                 <button type="submit" class="text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800">Submit</button>
             </form>
+            <div className="mt-4 text-sm text-gray-300">
+                <span>Don't have an account? </span>
+                <Link to="/register" className="text-golden-yellow hover:underline">Register</Link>
+            </div>
         </div>
     );
 }

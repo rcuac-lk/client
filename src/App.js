@@ -39,11 +39,11 @@ function App() {
             <>
               <Header />
               <HeroSection />
-              <SwimmingDetailsSection />
+              {/* <SwimmingDetailsSection />
               <AboutSection />
               <BannerSection />
               <ContactSection />
-              <Footer />
+              <Footer /> */}
             </>
           } />
         </Routes>

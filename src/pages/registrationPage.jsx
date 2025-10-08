@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 // import axios from '../api/axios';
 import axios from "axios";
 import AuthService from "../services/auth.service";
@@ -166,6 +166,10 @@ const RegistrationPage = () => {
           Register
         </button>
       </form>
+      <div className="mt-4 text-sm text-gray-300">
+        <span>Already have an account? </span>
+        <Link to="/login" className="text-golden-yellow hover:underline">Login</Link>
+      </div>
     </div>
   );
 };

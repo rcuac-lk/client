@@ -13,9 +13,9 @@ const Header = () => {
     }, []);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     return (
-        <nav className={`z-20 bg-transparent w-screen bg-opacity-0 transition-all duration-300 ease-in-out md:-mb-24 fixed top-0 bg-dark-blue bg-opacity-85"}`}>
+        <nav className={`z-20 w-full transition-all duration-300 ease-in-out fixed top-0 ${scroll ? "bg-dark-blue/90" : "bg-dark-blue/85"}`}>
             <div className="mx-auto">
-                <div className={`flex items-center justify-between transition-all duration-500 ease-in-out fixed backdrop-filter backdrop-blur-md bg-dark-blue bg-opacity-85"}`}>
+                <div className={`flex items-center justify-between transition-all duration-500 ease-in-out backdrop-filter backdrop-blur-md`}>
                 {/* <div className={`flex items-center justify-between transition-all duration-500 ease-in-out ${scroll ? "fixed h-20 backdrop-filter backdrop-blur-md bg-black bg-opacity-85" : "fixed h-24"}`}> */}
                     <header className="bg-transparent w-screen">
                         <nav className="bg-dark-blue fixed w-full z-20 top-0 start-0 border-b border-golden-yellow">
@@ -28,18 +28,26 @@ const Header = () => {
                                 <span className="self-center text-2xl font-semibold whitespace-nowrap text-white"></span>
                             </a>
                             <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-                                <div className="flex">
+                                <div className="hidden sm:flex">
                                     <Link to="/register" className="text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm md:mx-2 px-4 py-2 text-center bg-golden-yellow hover:bg-white hover:text-dark-blue hover:border-golden-yellow focus:ring-golden-yellow">Register</Link>
                                     <Link to="/login" className="text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm md:mx-4 px-4 py-2 text-center bg-golden-yellow hover:bg-white hover:text-dark-blue hover:border-golden-yellow focus:ring-golden-yellow">Login</Link>
                                 </div>
-                                <div className="flex md:hidden">
-                                    <button type="button" className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 px-5 text-white" onClick={() => setMobileMenuOpen(true)}>
+                                <div className="flex sm:hidden">
+                                    <button type="button" className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 px-5 text-white" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
                                         <span className="sr-only">Open main menu</span>
                                         <Bars3Icon className="h-6 w-6" aria-hidden="true" />
                                     </button>
                                     </div>
                                 </div>
-                                <div className="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-sticky">
+                                {mobileMenuOpen && (
+                                    <div className="sm:hidden w-full mt-2">
+                                        <div className="flex flex-col gap-2 px-4 pb-4">
+                                            <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="text-white bg-golden-yellow/90 hover:bg-golden-yellow rounded-lg text-sm px-4 py-2">Register</Link>
+                                            <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="text-white bg-golden-yellow/90 hover:bg-golden-yellow rounded-lg text-sm px-4 py-2">Login</Link>
+                                        </div>
+                                    </div>
+                                )}
+                                {/* <div className="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-sticky">
                                     <ul className="flex flex-col p-4 md:p-0 mt-4 font-medium border rounded-lg md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 bg-gray-800 md:bg-dark-blue border-gray-700">
                                     <li>
                                         <a href="/" className="block py-2 px-3 rounded md:p-0 md:hover:text-golden-yellow text-white hover:bg-gray-700 hover:text-white md:hover:bg-transparent border-gray-700" aria-current="page">Home</a>
@@ -51,16 +59,13 @@ const Header = () => {
                                         <a href="/#contact_section" className="block py-2 px-3 rounded md:p-0 md:hover:text-golden-yellow text-white hover:bg-gray-700 hover:text-white md:hover:bg-transparent border-gray-700" aria-current="page">Contact</a>
                                     </li>
                                     </ul>
-                                </div>
+                                </div> */}
                             </div>
                         </nav>
-                        <Dialog as="div" className="lg:hidden" open={mobileMenuOpen} onClose={setMobileMenuOpen}>
+                        {/* <Dialog as="div" className="lg:hidden" open={mobileMenuOpen} onClose={setMobileMenuOpen}>
                             <div className="fixed inset-0 z-10" />
                             <Dialog.Panel className="fixed inset-y-0 right-0 z-20 w-full overflow-y-auto bg-black px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-golden-yellow">
                                 <div className="flex items-center justify-between">
-                                    <a href="/" className="-m-1.5 p-1.5">
-                                        {/* <img className="h-8 w-auto" src="/images/logo.png" alt="Emin Labs"/> */}
-                                    </a>
                                     <button type="button" className="-m-2.5 rounded-md p-2.5 text-white" onClick={() => setMobileMenuOpen(false)}>
                                         <span className="sr-only">Close menu</span>
                                         <XMarkIcon className="h-6 w-6" aria-hidden="true" />
@@ -72,12 +77,11 @@ const Header = () => {
                                             <a href="/" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 bg-dark-blue rounded md:bg-transparent md:p-0 text-white md:text-blue-500" aria-current="page">Home</a>
                                             <a href="/#about_section" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 bg-dark-blue rounded md:bg-transparent md:p-0 text-white md:text-blue-500" aria-current="page">About</a>
                                             <a href="/#contact_section" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 bg-dark-blue rounded md:bg-transparent md:p-0 text-white md:text-blue-500" aria-current="page">Contact</a>
-                                            {/* <a href="/register" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 bg-blue-700 rounded md:bg-transparent md:p-0 text-white md:text-blue-500" aria-current="page">Contact</a> */}
                                         </div>
                                     </div>
                                 </div>
                             </Dialog.Panel>
-                        </Dialog>
+                        </Dialog> */}
                     </header>
                 </div>
             </div>

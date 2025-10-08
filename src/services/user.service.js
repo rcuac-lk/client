@@ -161,6 +161,10 @@ const addSession = (data) => {
   return api.post(API_URL + "users/addSession", data, { headers: authHeader() });
 }
 
+const forgetPassword = (id) => {
+  return api.get(API_URL + "users/forgetPassword/" + id, { headers: authHeader() });
+}
+
 const UserService = {
   notApprovedUsers,
   getAllUsers,
@@ -195,7 +199,8 @@ const UserService = {
   getSession,
   modifySession,
   deleteSession,
-  addSession
+  addSession,
+  forgetPassword
 };
 
 export default UserService;

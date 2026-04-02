@@ -17,7 +17,9 @@ const StudentListComponent = (props) => {
         admissionNumber: '',
         firstName: '',
         lastName: '',
-        dateOfBirth: ''
+        dateOfBirth: '',
+        fullName: '',
+        nameWithInitials: ''
     });
     const [formErrors, setFormErrors] = useState({});
 
@@ -85,7 +87,9 @@ const StudentListComponent = (props) => {
                 admissionNumber: response.data.AdmissionNumber,
                 firstName: response.data.FirstName,
                 lastName: response.data.LastName,
-                dateOfBirth: new Date(response.data.DOB).toISOString().split('T')[0]
+                dateOfBirth: new Date(response.data.DOB).toISOString().split('T')[0],
+                fullName: response.data.FullName || '',
+                nameWithInitials: response.data.NameWithInitials || ''
             });
             setIsEditModalOpen(true);
         } catch (error) {
@@ -100,7 +104,9 @@ const StudentListComponent = (props) => {
             admissionNumber: '',
             firstName: '',
             lastName: '',
-            dateOfBirth: ''
+            dateOfBirth: '',
+            fullName: '',
+            nameWithInitials: ''
         });
         setFormErrors({});
     };
@@ -152,7 +158,9 @@ const StudentListComponent = (props) => {
         formData.admissionNumber !== selectedUser.AdmissionNumber ||
         formData.firstName !== selectedUser.FirstName ||
         formData.lastName !== selectedUser.LastName ||
-        formData.dateOfBirth !== new Date(selectedUser.DOB).toISOString().split('T')[0];
+        formData.dateOfBirth !== new Date(selectedUser.DOB).toISOString().split('T')[0] ||
+        formData.fullName !== (selectedUser.FullName || '') ||
+        formData.nameWithInitials !== (selectedUser.NameWithInitials || '');
 
         if (!hasChanges) {
         setFormErrors({
@@ -170,7 +178,9 @@ const StudentListComponent = (props) => {
                 admissionNumber: String(formData.admissionNumber).trim(),
                 firstName: formData.firstName.trim(),
                 lastName: formData.lastName.trim(),
-                dateOfBirth: formData.dateOfBirth
+                dateOfBirth: formData.dateOfBirth,
+                fullName: formData.fullName.trim(),
+                nameWithInitials: formData.nameWithInitials.trim()
             };
 
             console.log('Sending update data:', data);
@@ -329,7 +339,7 @@ const StudentListComponent = (props) => {
                                             onClick={() => openEditModal(user.StudentID)}
                                             className="text-white bg-yellow-600 hover:bg-yellow-700 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-800"
                                         >
-                                            Edit User
+                                            Edit
                                         </button>
                                         <button
                                             type="button"
@@ -349,7 +359,7 @@ const StudentListComponent = (props) => {
                                                 onClick={() => openRejectModal(user)}
                                                 className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                                             >
-                                                Remove User
+                                                Remove
                                             </button>
                                         )}
                                     </div>
@@ -507,6 +517,34 @@ const StudentListComponent = (props) => {
                                         {formErrors.dateOfBirth && (
                                             <p className="mt-2 text-sm text-red-600 dark:text-red-500">{formErrors.dateOfBirth}</p>
                                         )}
+                                    </div>
+                                    <div>
+                                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Full Name <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="fullName"
+                                            value={formData.fullName}
+                                            onChange={handleInputChange}
+                                            readOnly={!(isAdmin || isManager)}
+                                            required
+                                            className={`border ${formErrors.fullName ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:border-gray-500 dark:text-white ${!(isAdmin || isManager) ? 'bg-gray-200 dark:bg-gray-700 cursor-not-allowed' : 'bg-gray-50 dark:bg-gray-600'}`}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Name with Initials <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="nameWithInitials"
+                                            value={formData.nameWithInitials}
+                                            onChange={handleInputChange}
+                                            readOnly={!(isAdmin || isManager)}
+                                            required
+                                            className={`border ${formErrors.nameWithInitials ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:border-gray-500 dark:text-white ${!(isAdmin || isManager) ? 'bg-gray-200 dark:bg-gray-700 cursor-not-allowed' : 'bg-gray-50 dark:bg-gray-600'}`}
+                                        />
                                     </div>
                                 </div>
                                 <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">

@@ -400,6 +400,14 @@ const StudentManagement = () => {
                       <h4 className="text-sm font-medium text-gray-500">Last Name</h4>
                       <p className="mt-1 text-lg break-words">{selectedStudent.LastName}</p>
                     </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">Full Name</h4>
+                      <p className="mt-1 text-lg break-words">{selectedStudent.FullName || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">Name with Initials</h4>
+                      <p className="mt-1 text-lg break-words">{selectedStudent.NameWithInitials || 'N/A'}</p>
+                    </div>
                   </div>
                 </div>
               </div>
